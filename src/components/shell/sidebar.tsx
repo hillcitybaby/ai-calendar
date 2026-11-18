@@ -74,7 +74,8 @@ export function Sidebar({ name, initials }: { name: string; initials: string }) 
           asChild
           variant={settingsActive ? "secondary" : "ghost"}
           size="icon-sm"
-          className={cn("rounded-lg", !settingsActive && "hover:bg-sidebar-accent")}
+          // -mr-2 puts the 16px icon 8px from the edge, as in the kit footer, while keeping a 32px target.
+          className={cn("-mr-2 rounded-lg", !settingsActive && "hover:bg-sidebar-accent")}
         >
           <Link href="/settings" aria-label="Settings" aria-current={settingsActive ? "page" : undefined}>
             <Settings />
@@ -144,11 +145,11 @@ function CalendarLegendItem({
       <span
         aria-hidden
         className={cn(
-          "flex size-4 shrink-0 items-center justify-center rounded-[4px] border-[1.5px] border-(color:--cal-accent) text-white transition-colors",
+          "flex size-4 shrink-0 items-center justify-center rounded-[4px] border-[1.5px] border-(color:--cal-accent) text-primary-foreground transition-colors",
           visible ? "bg-(--cal-accent)" : "bg-transparent",
         )}
       >
-        {visible && <Check className="size-3" strokeWidth={3} />}
+        {visible && <Check className="size-3" />}
       </span>
       <span className="min-w-0 flex-1 truncate">{calendar.name}</span>
     </button>
