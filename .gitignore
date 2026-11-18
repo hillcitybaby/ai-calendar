@@ -19,3 +19,12 @@ build/
 __pycache__/
 *.pyc
 .venv/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+*.pem
+pnpm-debug.log*

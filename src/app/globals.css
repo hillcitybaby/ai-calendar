@@ -1,0 +1,205 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Design tokens for AI Calendar.
+ * Source of truth: the design system kit in Figma (see docs/design-handoff.md §4).
+ * Only a light theme is designed so far, so there is no dark variant yet.
+ */
+
+:root {
+  /* shadcn/ui base colors (neutral) */
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #171717;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #000000;
+  --destructive: #dc2626;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #d4d4d4;
+
+  --sidebar: #fafafa;
+  --sidebar-foreground: #404040;
+  --sidebar-primary: #404040;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #d4d4d4;
+
+  /* Ink for the Assistant Mark particles */
+  --ink: #171717;
+
+  /* Calendar colors: subtle (wash), bg (event fill), accent (bar, dot, checkbox), text */
+  --calendar-blue-subtle: #eff6ff;
+  --calendar-blue-bg: #dbeafe;
+  --calendar-blue-accent: #3b82f6;
+  --calendar-blue-text: #1e40af;
+
+  --calendar-violet-subtle: #f5f3ff;
+  --calendar-violet-bg: #ede9fe;
+  --calendar-violet-accent: #8b5cf6;
+  --calendar-violet-text: #5b21b6;
+
+  --calendar-pink-subtle: #fdf2f8;
+  --calendar-pink-bg: #fce7f3;
+  --calendar-pink-accent: #ec4899;
+  --calendar-pink-text: #9d174d;
+
+  --calendar-orange-subtle: #fff7ed;
+  --calendar-orange-bg: #ffedd5;
+  --calendar-orange-accent: #f97316;
+  --calendar-orange-text: #9a3412;
+
+  --calendar-amber-subtle: #fffbeb;
+  --calendar-amber-bg: #fef3c7;
+  --calendar-amber-accent: #f59e0b;
+  --calendar-amber-text: #92400e;
+
+  --calendar-emerald-subtle: #ecfdf5;
+  --calendar-emerald-bg: #d1fae5;
+  --calendar-emerald-accent: #10b981;
+  --calendar-emerald-text: #065f46;
+
+  --calendar-teal-subtle: #f0fdfa;
+  --calendar-teal-bg: #ccfbf1;
+  --calendar-teal-accent: #14b8a6;
+  --calendar-teal-text: #115e59;
+
+  --calendar-slate-subtle: #f8fafc;
+  --calendar-slate-bg: #f1f5f9;
+  --calendar-slate-accent: #64748b;
+  --calendar-slate-text: #1e293b;
+
+  /* Radius base: lg = 10px */
+  --radius: 10px;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-ink: var(--ink);
+
+  /* Calendar color utilities, e.g. bg-calendar-blue-bg, text-calendar-blue-text */
+  --color-calendar-blue-subtle: var(--calendar-blue-subtle);
+  --color-calendar-blue-bg: var(--calendar-blue-bg);
+  --color-calendar-blue-accent: var(--calendar-blue-accent);
+  --color-calendar-blue-text: var(--calendar-blue-text);
+  --color-calendar-violet-subtle: var(--calendar-violet-subtle);
+  --color-calendar-violet-bg: var(--calendar-violet-bg);
+  --color-calendar-violet-accent: var(--calendar-violet-accent);
+  --color-calendar-violet-text: var(--calendar-violet-text);
+  --color-calendar-pink-subtle: var(--calendar-pink-subtle);
+  --color-calendar-pink-bg: var(--calendar-pink-bg);
+  --color-calendar-pink-accent: var(--calendar-pink-accent);
+  --color-calendar-pink-text: var(--calendar-pink-text);
+  --color-calendar-orange-subtle: var(--calendar-orange-subtle);
+  --color-calendar-orange-bg: var(--calendar-orange-bg);
+  --color-calendar-orange-accent: var(--calendar-orange-accent);
+  --color-calendar-orange-text: var(--calendar-orange-text);
+  --color-calendar-amber-subtle: var(--calendar-amber-subtle);
+  --color-calendar-amber-bg: var(--calendar-amber-bg);
+  --color-calendar-amber-accent: var(--calendar-amber-accent);
+  --color-calendar-amber-text: var(--calendar-amber-text);
+  --color-calendar-emerald-subtle: var(--calendar-emerald-subtle);
+  --color-calendar-emerald-bg: var(--calendar-emerald-bg);
+  --color-calendar-emerald-accent: var(--calendar-emerald-accent);
+  --color-calendar-emerald-text: var(--calendar-emerald-text);
+  --color-calendar-teal-subtle: var(--calendar-teal-subtle);
+  --color-calendar-teal-bg: var(--calendar-teal-bg);
+  --color-calendar-teal-accent: var(--calendar-teal-accent);
+  --color-calendar-teal-text: var(--calendar-teal-text);
+  --color-calendar-slate-subtle: var(--calendar-slate-subtle);
+  --color-calendar-slate-bg: var(--calendar-slate-bg);
+  --color-calendar-slate-accent: var(--calendar-slate-accent);
+  --color-calendar-slate-text: var(--calendar-slate-text);
+
+  /* Radius: sm 6 · md 8 · lg 10 · xl 14 · 2xl 16 · full */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: 16px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 #0000000d;
+  --shadow-sm: 0 1px 3px #0000001a, 0 1px 2px -1px #0000001a;
+  --shadow-md: 0 4px 6px -1px #0000001a, 0 2px 4px -2px #0000001a;
+  --shadow-lg: 0 10px 15px -3px #0000001a, 0 4px 6px -4px #0000001a;
+
+  /*
+   * Type. Paragraph styles map to Tailwind's defaults:
+   * mini = text-xs (12/16) · small = text-sm (14/20) · paragraph = text-base (16/24) · large = text-lg (18/27).
+   * Headings get their own utilities: text-h1 … text-h4.
+   * Spacing tokens map to Tailwind's 4px scale:
+   * 3xs 2 = 0.5 · 2xs 4 = 1 · xs 8 = 2 · sm 12 = 3 · md 16 = 4 · lg 20 = 5 · xl 24 = 6.
+   */
+  --text-lg--line-height: 27px;
+  --text-h1: 40px;
+  --text-h1--line-height: 40px;
+  --text-h1--letter-spacing: -1.5px;
+  --text-h1--font-weight: 500;
+  --text-h2: 26px;
+  --text-h2--line-height: 26px;
+  --text-h2--letter-spacing: -1px;
+  --text-h2--font-weight: 500;
+  --text-h3: 22px;
+  --text-h3--line-height: 26.4px;
+  --text-h3--letter-spacing: -0.5px;
+  --text-h3--font-weight: 500;
+  --text-h4: 18px;
+  --text-h4--line-height: 21.6px;
+  --text-h4--font-weight: 500;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+}
