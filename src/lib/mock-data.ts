@@ -214,7 +214,6 @@ export function buildSeed(today: Date): SeedData {
       end: at(sat, 12, 30),
       weather: "rain",
       cost: "cost",
-      photo: "/photos/museum.jpg",
       calendarId: "personal",
     }),
     sug({
@@ -228,7 +227,6 @@ export function buildSeed(today: Date): SeedData {
       end: at(sat, 9),
       weather: "sun",
       cost: "free",
-      photo: "/photos/market.jpg",
       calendarId: "local-events",
     }),
     sug({
@@ -242,7 +240,6 @@ export function buildSeed(today: Date): SeedData {
       end: at(sat, 21),
       weather: "moon",
       cost: "expensive",
-      photo: "/photos/dinner.jpg",
       calendarId: "date-nights",
     }),
     sug({
@@ -256,7 +253,6 @@ export function buildSeed(today: Date): SeedData {
       end: at(addDays(thu, 7), 11),
       weather: "sun",
       cost: "free",
-      photo: "/photos/park.jpg",
       calendarId: "local-events",
     }),
     sug({
@@ -270,7 +266,6 @@ export function buildSeed(today: Date): SeedData {
       end: at(sun, 11, 15),
       weather: "cloud-sun",
       cost: "free",
-      photo: "/photos/library.jpg",
       calendarId: "local-events",
     }),
   ];

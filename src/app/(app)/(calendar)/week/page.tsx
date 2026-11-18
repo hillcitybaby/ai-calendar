@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { PagePlaceholder } from "@/components/shell/page-placeholder";
+import { WeekView } from "@/components/screens/week-view";
 
 export const metadata: Metadata = { title: "Week" };
 
 export default function WeekPage() {
-  return <PagePlaceholder>The Week view is built in Milestone 3.</PagePlaceholder>;
+  return (
+    <Suspense>
+      <WeekView />
+    </Suspense>
+  );
 }

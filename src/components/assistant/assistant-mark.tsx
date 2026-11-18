@@ -17,7 +17,7 @@ import {
  * Kit sizes: L 120, M 40, S 20. The top bar uses a 32px resting mark; Plan (AC) headers and
  * suggested Event Blocks use 16px.
  */
-export type AssistantMarkSize = "L" | "M" | "S" | 32 | 16;
+export type AssistantMarkSize = "L" | "M" | "S" | 32 | 16 | 14;
 
 const PRESETS: Record<string, Pick<SwarmOptions, "n" | "size" | "scale"> & { px: number }> = {
   L: { px: 120, n: 260, size: 1, scale: 0.33 },
@@ -25,6 +25,7 @@ const PRESETS: Record<string, Pick<SwarmOptions, "n" | "size" | "scale"> & { px:
   "32": { px: 32, n: 48, size: 0.72, scale: 0.38 },
   S: { px: 20, n: 22, size: 0.7, scale: 0.4 },
   "16": { px: 16, n: 18, size: 0.6, scale: 0.42 },
+  "14": { px: 14, n: 16, size: 0.55, scale: 0.42 },
 };
 
 const STATE_LABELS: Record<AssistantState, string> = {

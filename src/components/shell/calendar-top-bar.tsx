@@ -16,6 +16,7 @@ import {
   viewTitle,
   type CalendarView,
 } from "@/lib/calendar-view";
+import { useStore } from "@/lib/store";
 import { useToday } from "@/lib/use-today";
 
 import { TopBar } from "./top-bar";
@@ -32,6 +33,7 @@ export function CalendarTopBar() {
   const router = useRouter();
   const params = useSearchParams();
   const today = useToday();
+  const { state } = useStore();
   const view = viewFromPath(pathname) ?? "week";
   const raw = params.get("date");
   const date = parseDateParam(raw, today);
@@ -42,7 +44,7 @@ export function CalendarTopBar() {
 
   return (
     <TopBar
-      title={<span suppressHydrationWarning>{viewTitle(date, view)}</span>}
+      title={<span suppressHydrationWarning>{viewTitle(date, view, state.settings.weekStartsOn)}</span>}
       leading={
         <div className="flex items-center gap-1 pl-3">
           <Button asChild variant="outline" size="icon" className="size-7 rounded-md shadow-none">

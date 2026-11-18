@@ -26,7 +26,7 @@ export function viewFromPath(pathname: string): CalendarView | null {
   return entry ? (entry[0] as CalendarView) : null;
 }
 
-/** Week start comes from Settings later; Sunday until then. */
+/** Default week start (Sunday); Settings › General can change it. */
 export const WEEK_STARTS_ON = 0 as const;
 
 /** Read the `?date=YYYY-MM-DD` param, falling back to today. */
@@ -47,11 +47,11 @@ export function shiftDate(date: Date, view: CalendarView, step: 1 | -1) {
 }
 
 /** Top bar title: "Tuesday, November 17" for day; "November 2026" for week and month. */
-export function viewTitle(date: Date, view: CalendarView) {
+export function viewTitle(date: Date, view: CalendarView, weekStartsOn: 0 | 1 = WEEK_STARTS_ON) {
   if (view === "day") return format(date, "EEEE, MMMM d");
   if (view === "month") return format(date, "MMMM yyyy");
-  const start = startOfWeek(date, { weekStartsOn: WEEK_STARTS_ON });
-  const end = endOfWeek(date, { weekStartsOn: WEEK_STARTS_ON });
+  const start = startOfWeek(date, { weekStartsOn });
+  const end = endOfWeek(date, { weekStartsOn });
   if (isSameMonth(start, end)) return format(start, "MMMM yyyy");
   if (isSameYear(start, end)) return `${format(start, "MMM")} – ${format(end, "MMM yyyy")}`;
   return `${format(start, "MMM yyyy")} – ${format(end, "MMM yyyy")}`;

@@ -17,3 +17,7 @@ Things the code needed that the design system kit doesn't have yet, or where the
 | 2 | Now Line (AC) | Name the color token | The kit draws it red without a token; the code uses `destructive`. |
 | 2 | Day capacity row | New component | Today's "Today's plan · 6h 45m of 8h planned" heading with Progress (AC) isn't a kit component. |
 | 2 | Add Task (AC), State=Typing | Add placeholder text | The empty input needs placeholder copy; the code uses "Task name, 45m, #channel, tomorrow". |
+| 3 | Month grid | New component | Month view's 7-column grid (weekday header, day cells with a date that's a filled circle on today, Event Chips, "+N more", muted days outside the month) isn't in the kit. Calendar (AC) is the date-picker style. Built from the Pass 5 Month frame. |
+| 3 | "+N more" popover | New component | Lists all of a day's events with times. Built with Popover; no kit design. |
+| 3 | To-do list heading | New component | "To schedule 4" / "This month 7" heading (14px semibold + 12px muted count) isn't a kit component; Task Column Header (AC) is a different, per-day design. |
+| 3 | Suggestion Card (AC) photos | Add real photos or confirm the placeholder | Downloading stock photos was blocked in this build environment, so cards use the kit's blue gradient placeholder. The card shows a photo whenever a suggestion has one. |

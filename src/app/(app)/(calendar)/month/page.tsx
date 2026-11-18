@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { PagePlaceholder } from "@/components/shell/page-placeholder";
+import { MonthView } from "@/components/screens/month-view";
 
 export const metadata: Metadata = { title: "Month" };
 
 export default function MonthPage() {
-  return <PagePlaceholder>The Month view is built in Milestone 3.</PagePlaceholder>;
+  return (
+    <Suspense>
+      <MonthView />
+    </Suspense>
+  );
 }
