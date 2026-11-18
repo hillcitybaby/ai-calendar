@@ -5,7 +5,7 @@ import { addMinutes, format, parseISO } from "date-fns";
 
 import { buildSeed, type SeedData } from "./mock-data";
 import type { Settings } from "./settings";
-import type { CalendarEvent, Task, TaskBucket } from "./types";
+import type { CalendarEvent, Connector, Task, TaskBucket } from "./types";
 
 const STORAGE_KEY = "ai-calendar:v1";
 
@@ -32,7 +32,8 @@ export type Action =
   | { type: "interest/add"; label: string }
   | { type: "interest/remove"; id: string }
   | { type: "interest/accept"; id: string }
-  | { type: "settings/update"; patch: Partial<Settings> };
+  | { type: "settings/update"; patch: Partial<Settings> }
+  | { type: "connector/add"; connector: Connector };
 
 const iso = (d: Date) => format(d, "yyyy-MM-dd'T'HH:mm:ss");
 let uid = Date.now();
@@ -264,6 +265,8 @@ export function reducer(state: State, action: Action): State {
       };
     case "settings/update":
       return { ...state, settings: { ...state.settings, ...action.patch } };
+    case "connector/add":
+      return { ...state, connectors: [...state.connectors, action.connector] };
   }
 }
 

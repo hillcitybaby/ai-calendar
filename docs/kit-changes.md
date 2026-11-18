@@ -24,3 +24,11 @@ Things the code needed that the design system kit doesn't have yet, or where the
 | 4 | Suggestions section header | New component | "This weekend" / "Coming up" heading with a 16px map-pin isn't a kit component. |
 | 4 | Suggestions empty state | Confirm copy | Uses Empty (AC) with a lightbulb: "No new suggestions" + "Edit interests". No Pass 5 frame shows it. |
 | 4 | Toast (AC) copy | Confirm copy | Dismissing a suggestion shows "Hidden "<title>"" with "We'll suggest fewer things like this." and Undo; adding shows "Added "<title>" to your calendar". |
+| 5 | Settings card + rows | New components | The bordered card with a header and divided rows (text field row, switch row, Toggle Group row, button row) is used across Settings and Connectors but isn't in the kit. |
+| 5 | Settings sub-nav item | New component | 36px nav rows with an accent fill on the active section. |
+| 5 | Connector row | New component | Icon tile, name + detail, emerald connected check, Manage button. |
+| 5 | Interest tags | New components | Removable secondary pill (label + x) and the outline "suggested" pill (+ label). |
+| 5 | Add connector menu | Add the second level | The Pass 5 menu shows Calendar / Integration; picking a provider (Google, Outlook, iCloud / ClickUp, Notion, Todoist…) needs a submenu, built with the stock dropdown submenu. |
+| 5 | Settings › Account | Design the section | Not in Pass 5. The code has one row, "Reset example data". |
+| 5 | Settings › Theme | Note | Dark and System save the choice but the app stays light until a dark theme is designed. The description says so. |
+| 5 | Sidebar on Settings / Connectors | Confirm | Those Pass 5 frames hide the Calendars group; the code keeps it on every page, as the kit's Sidebar (AC) does. |
