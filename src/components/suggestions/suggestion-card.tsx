@@ -102,7 +102,17 @@ function useActions(s: Suggestion) {
  * here), and stats (place type + travel time, day + time). Hover dims the photo and offers one
  * action; X means "Not interested".
  */
-export function SuggestionCard({ s, onDismiss, className }: { s: Suggestion; onDismiss?: () => void; className?: string }) {
+export function SuggestionCard({
+  s,
+  onAdd,
+  onDismiss,
+  className,
+}: {
+  s: Suggestion;
+  onAdd?: () => void;
+  onDismiss?: () => void;
+  className?: string;
+}) {
   const { accept, dismiss } = useActions(s);
   const d = parseISO(s.start);
   return (
@@ -124,7 +134,10 @@ export function SuggestionCard({ s, onDismiss, className }: { s: Suggestion; onD
         </IconTab>
         <button
           type="button"
-          onClick={accept}
+          onClick={() => {
+            accept();
+            onAdd?.();
+          }}
           className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-sm font-medium whitespace-nowrap text-secondary-foreground opacity-0 outline-none transition-opacity group-hover/sug:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-focus-within/sug:opacity-100"
         >
           <Plus className="size-4" aria-hidden />

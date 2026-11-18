@@ -1,4 +1,5 @@
 import {
+  addDays,
   differenceInMinutes,
   endOfMonth,
   endOfWeek,
@@ -178,4 +179,18 @@ const WEATHER: WeatherKind[] = ["sun", "cloud-sun", "cloud", "rain", "sun", "clo
 export function weatherFor(date: Date): { kind: WeatherKind; temp: number } {
   const n = Math.floor(date.getTime() / 86_400_000);
   return { kind: WEATHER[((n % 7) + 7) % 7], temp: 55 + (((n * 37) % 13) + 13) % 13 };
+}
+
+/**
+ * "This weekend" on the Suggestions page: from Friday 5 PM through the end of Sunday of the
+ * coming weekend (the current one if it's already the weekend).
+ */
+export function isThisWeekend(when: Date, today: Date) {
+  const day = today.getDay(); // 0 Sun … 6 Sat
+  const toSaturday = day === 0 ? -1 : 6 - day;
+  const saturday = addDays(new Date(today.getFullYear(), today.getMonth(), today.getDate()), toSaturday);
+  const start = addDays(saturday, -1);
+  start.setHours(17, 0, 0, 0);
+  const end = addDays(saturday, 2); // Monday 00:00
+  return when >= start && when < end;
 }

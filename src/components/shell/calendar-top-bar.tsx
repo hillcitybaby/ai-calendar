@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Segmented } from "@/components/common/segmented";
 import {
   parseDateParam,
   prevNextLabels,
@@ -64,26 +64,12 @@ export function CalendarTopBar() {
       }
       actions={
         <>
-          <ToggleGroup
-            type="single"
+          <Segmented
             value={view}
-            onValueChange={(v) => {
-              if (v) router.push(href(v as CalendarView, raw ? date : undefined));
-            }}
-            aria-label="Calendar view"
-            spacing={1}
-            className="rounded-lg border border-border p-1"
-          >
-            {VIEWS.map((v) => (
-              <ToggleGroupItem
-                key={v.value}
-                value={v.value}
-                className="h-8 rounded-md px-3 text-foreground hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
-              >
-                {v.label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+            onChange={(v) => router.push(href(v, raw ? date : undefined))}
+            options={VIEWS}
+            label="Calendar view"
+          />
           <Button variant="ghost" size="icon" className="size-7 rounded-md" aria-label="Search">
             <Search />
           </Button>

@@ -21,3 +21,6 @@ Things the code needed that the design system kit doesn't have yet, or where the
 | 3 | "+N more" popover | New component | Lists all of a day's events with times. Built with Popover; no kit design. |
 | 3 | To-do list heading | New component | "To schedule 4" / "This month 7" heading (14px semibold + 12px muted count) isn't a kit component; Task Column Header (AC) is a different, per-day design. |
 | 3 | Suggestion Card (AC) photos | Add real photos or confirm the placeholder | Downloading stock photos was blocked in this build environment, so cards use the kit's blue gradient placeholder. The card shows a photo whenever a suggestion has one. |
+| 4 | Suggestions section header | New component | "This weekend" / "Coming up" heading with a 16px map-pin isn't a kit component. |
+| 4 | Suggestions empty state | Confirm copy | Uses Empty (AC) with a lightbulb: "No new suggestions" + "Edit interests". No Pass 5 frame shows it. |
+| 4 | Toast (AC) copy | Confirm copy | Dismissing a suggestion shows "Hidden "<title>"" with "We'll suggest fewer things like this." and Undo; adding shows "Added "<title>" to your calendar". |

@@ -4,6 +4,7 @@ import {
   formatDuration,
   formatPlanned,
   formatTimeRange,
+  isThisWeekend,
   layoutDay,
   snap,
   tasksForDay,
@@ -105,5 +106,21 @@ describe("task lists", () => {
   });
   it("Month lists unscheduled tasks in that month", () => {
     expect(tasksForMonth(tasks, day).map((t) => t.id)).toEqual(["today", "week", "nextWeek", "month"]);
+  });
+});
+
+describe("isThisWeekend", () => {
+  const wed = new Date(2026, 10, 18);
+  it("covers Friday evening through Sunday", () => {
+    expect(isThisWeekend(new Date(2026, 10, 20, 18), wed)).toBe(true);
+    expect(isThisWeekend(new Date(2026, 10, 21, 10), wed)).toBe(true);
+    expect(isThisWeekend(new Date(2026, 10, 22, 10, 30), wed)).toBe(true);
+  });
+  it("excludes weekdays and the following week", () => {
+    expect(isThisWeekend(new Date(2026, 10, 20, 9), wed)).toBe(false);
+    expect(isThisWeekend(new Date(2026, 10, 26, 9), wed)).toBe(false);
+  });
+  it("uses the current weekend on Sunday", () => {
+    expect(isThisWeekend(new Date(2026, 10, 22, 15), new Date(2026, 10, 22))).toBe(true);
   });
 });
