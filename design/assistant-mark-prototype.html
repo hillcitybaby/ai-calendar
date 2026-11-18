@@ -1,0 +1,392 @@
+<title>Particle Motion Preview</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: plain shadcn canvas (zinc + Geist). The assistant is a field of ink particles that moves together
+   and fills a simple shape per state. Hero stage with state controls + a sequence, the twelve states live, small sizes, motion rules. */
+:root {
+  --bg: #fafafa; --card: #ffffff; --fg: #09090b; --muted: #f4f4f5; --muted-fg: #71717a;
+  --border: #e4e4e7; --input: #e4e4e7; --primary: #18181b; --primary-fg: #fafafa; --ring: #a1a1aa;
+  --ink: #18181b;
+  --font: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --shadow-sm: 0 1px 2px rgba(9, 9, 11, .06);
+  --ease: cubic-bezier(.2, .7, .2, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #09090b; --card: #111114; --fg: #fafafa; --muted: #1d1d21; --muted-fg: #a1a1aa;
+    --border: #27272a; --input: #2e2e33; --primary: #fafafa; --primary-fg: #18181b; --ring: #71717a;
+    --ink: #f4f4f5;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #09090b; --card: #111114; --fg: #fafafa; --muted: #1d1d21; --muted-fg: #a1a1aa;
+  --border: #27272a; --input: #2e2e33; --primary: #fafafa; --primary-fg: #18181b; --ring: #71717a;
+  --ink: #f4f4f5;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, p { margin: 0; }
+button { font-family: inherit; }
+.page {
+  max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 64px;
+  padding-block: 40px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.eyebrow { font: 500 12px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted-fg); }
+canvas.cv { display: block; width: 100%; height: 100%; }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* hero */
+.hero { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 44px; align-items: center; }
+.hero h1 { font-size: clamp(34px, 4.6vw, 52px); line-height: 1.02; letter-spacing: -.035em; font-weight: 600; margin: 14px 0 16px; text-wrap: balance; }
+.lede { font-size: 16px; line-height: 1.6; color: var(--muted-fg); max-width: 54ch; }
+.states-ctl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 22px; padding: 4px; border-radius: 12px; background: var(--muted); }
+.states-ctl button { height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--muted-fg); font: 500 13px/1 var(--font); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background-color 200ms, color 200ms; }
+.states-ctl button[aria-pressed="true"] { background: var(--card); color: var(--fg); box-shadow: var(--shadow-sm); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 16px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--fg); font: 500 13px/1 var(--font); cursor: pointer; box-shadow: var(--shadow-sm); }
+.btn:hover { background: var(--muted); }
+.switch { display: inline-flex; align-items: center; gap: 10px; border: 0; padding: 0; background: none; color: var(--fg); font: 500 13px/1 var(--font); cursor: pointer; }
+.switch .track { position: relative; width: 36px; height: 20px; border-radius: 999px; background: var(--input); transition: background-color 200ms; }
+.switch .thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--card); box-shadow: 0 1px 2px rgba(0, 0, 0, .25); transition: translate 200ms var(--ease), background-color 200ms; }
+.switch[aria-checked="true"] .track { background: var(--primary); }
+.switch[aria-checked="true"] .thumb { translate: 16px 0; background: var(--primary-fg); }
+.spec { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; margin: 22px 0 0; padding-top: 18px; border-top: 1px solid var(--border); font-size: 13px; }
+.spec dt { font: 500 12px/1.6 var(--mono); color: var(--muted-fg); }
+.spec dd { margin: 0; }
+.hero-stage { position: relative; width: 100%; aspect-ratio: 16 / 12; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); background: var(--card); }
+.stage-label { position: absolute; left: 16px; top: 14px; font: 500 12px/1 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted-fg); }
+.stage-shape { position: absolute; right: 16px; top: 14px; font: 500 12px/1 var(--mono); color: var(--muted-fg); }
+
+/* sections */
+.block { display: flex; flex-direction: column; gap: 18px; }
+.block-head h2 { font-size: 22px; line-height: 1.2; letter-spacing: -.02em; font-weight: 600; text-wrap: balance; }
+.block-head p { margin-top: 4px; color: var(--muted-fg); max-width: 72ch; }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.tile { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--border); border-radius: 14px; background: var(--card); overflow: hidden; }
+.tile-cv { aspect-ratio: 1 / .8; border-bottom: 1px solid var(--border); }
+.tile-copy { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px 14px; }
+.tile-copy h3 { font-size: 14px; font-weight: 600; display: flex; justify-content: space-between; gap: 8px; }
+.tile-copy h3 span { font: 500 11px/1.6 var(--mono); color: var(--muted-fg); font-weight: 500; }
+.tile-copy p { font-size: 12.5px; color: var(--muted-fg); }
+
+/* sizes */
+.sizes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.sbox { display: flex; flex-direction: column; gap: 16px; padding: 20px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); }
+.sbox h3 { font-size: 14px; font-weight: 600; }
+.srow { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.srow figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.srow figcaption { font: 11px/1 var(--mono); color: var(--muted-fg); }
+canvas.s40 { width: 40px; height: 40px; border-radius: 50%; background: var(--muted); }
+canvas.s20 { width: 20px; height: 20px; flex: none; }
+.chip { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px 0 8px; border: 1px solid var(--border); border-radius: 8px; font-weight: 500; font-size: 13px; }
+.chip .m { color: var(--muted-fg); }
+
+/* rules */
+.rules { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.rules li { padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+.rules b { display: block; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.rules span { font-size: 13px; color: var(--muted-fg); }
+
+@media (max-width: 1080px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .hero, .sizes { grid-template-columns: minmax(0, 1fr); gap: 28px; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .rules { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 460px) { .states-ctl { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M6 3l14 9-14 9z"/></symbol>
+</svg>
+
+<div class="page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">AI Calendar · Assistant</p>
+      <h1>Particle motion preview</h1>
+      <p class="lede">The assistant is a field of particles that moves together like a flock and fills simple shapes: a circle at rest, a donut while it thinks, a square while it waits for you. Each state has its own shape, and the particles flow from one to the next.</p>
+      <div class="states-ctl" id="state-ctl" role="group" aria-label="State"></div>
+      <div class="row">
+        <button type="button" class="btn" id="play"><svg class="i"><use href="#i-play"/></svg>Play a full request</button>
+        <button type="button" class="switch" id="motion" role="switch" aria-checked="false"><span class="track"><span class="thumb"></span></span>Reduced motion</button>
+      </div>
+      <dl class="spec">
+        <dt>Shape</dt><dd id="spec-shape"></dd>
+        <dt>When</dt><dd id="spec-when"></dd>
+        <dt>Motion</dt><dd id="spec-motion"></dd>
+      </dl>
+    </div>
+    <div class="hero-stage">
+      <canvas class="cv" id="hero-cv" role="img" aria-label="Particles forming the current state’s shape"></canvas>
+      <span class="stage-label" id="stage-label">Idle</span><span class="stage-shape" id="stage-shape">Circle</span>
+    </div>
+  </header>
+
+  <section class="block" aria-labelledby="h-states">
+    <div class="block-head">
+      <h2 id="h-states">Twelve states</h2>
+      <p>The nine core states plus the three you’ll see most while planning. Every tile is live.</p>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-sizes">
+    <div class="block-head">
+      <h2 id="h-sizes">Small sizes</h2>
+      <p>Fewer particles, same shapes. At 20 px it’s a handful of dots, which is still enough to tell resting from thinking.</p>
+    </div>
+    <div class="sizes">
+      <div class="sbox"><h3>Avatar · 40 px</h3>
+        <div class="srow">
+          <figure><canvas class="cv s40" data-small="idle" aria-hidden="true"></canvas><figcaption>Idle</figcaption></figure>
+          <figure><canvas class="cv s40" data-small="thinking" aria-hidden="true"></canvas><figcaption>Thinking</figcaption></figure>
+          <figure><canvas class="cv s40" data-small="listening" aria-hidden="true"></canvas><figcaption>Listening</figcaption></figure>
+          <figure><canvas class="cv s40" data-small="waiting" aria-hidden="true"></canvas><figcaption>Waiting</figcaption></figure>
+        </div>
+      </div>
+      <div class="sbox"><h3>Inline · 20 px</h3>
+        <div class="srow">
+          <span class="chip"><canvas class="cv s20" data-small="thinking" aria-hidden="true"></canvas><span class="m">Checking your calendars…</span></span>
+          <span class="chip"><canvas class="cv s20" data-small="idle" aria-hidden="true"></canvas>Ask AI</span>
+          <span class="chip"><canvas class="cv s20" data-small="waiting" aria-hidden="true"></canvas>Needs your OK</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-rules">
+    <div class="block-head">
+      <h2 id="h-rules">How it moves</h2>
+      <p>The rules behind the motion. They carry over to the code build.</p>
+    </div>
+    <ul class="rules">
+      <li><b>Every particle has a spot</b><span>Each state gives every particle a place inside the shape. Particles steer toward their spot; nothing jumps.</span></li>
+      <li><b>They travel together</b><span>A shared current bends their paths, so neighbors move in the same sweeping bands, like a flock.</span></li>
+      <li><b>Shapes stay alive</b><span>Inside a shape, particles keep circulating slowly: a swirl in the circle, a current around the donut, loops inside the square.</span></li>
+      <li><b>Changes ripple across</b><span>When the state changes, particles leave over about half a second, one side first, so the change reads as a wave. With reduced motion, each state is a still shape.</span></li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const TAU = Math.PI * 2;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const ease = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+  const reduced = () => root.dataset.motion === 'reduced';
+
+  function voice(t) { return clamp(Math.abs(Math.sin(t * 3.1) * .5 + Math.sin(t * 5.3 + 1.3) * .3 + Math.sin(t * 1.7 + 2.1) * .4), 0, 1); }
+
+  /* polar point → rounded square (m = roundness 0 circle … 1 square) */
+  function squarePt(r, th, half, m) { const c = Math.cos(th), s = Math.sin(th); const k = lerp(1, 1 / Math.max(Math.abs(c), Math.abs(s)), m); return [c * r * k * half, s * r * k * half]; }
+
+  /* ---------- shapes: every particle p has stable randoms u1,u2,a ---------- */
+  const SHAPES = {
+    idle: (p, t) => { const rho = Math.sqrt(p.u1), R = .72 * (1 + .05 * Math.sin(p.u2 * TAU * 3 + t * .7)); const th = p.u2 * TAU + t * (.16 + .26 * (1 - rho)); return [Math.cos(th) * rho * R, Math.sin(th) * rho * R]; },
+    summoned: (p, t) => { const rho = Math.sqrt(p.u1), R = .42; const th = p.u2 * TAU + t * (.45 + .4 * (1 - rho)); return [Math.cos(th) * rho * R, .3 + Math.sin(th) * rho * R]; },
+    listening: (p, t) => { const x = (p.u1 * 2 - 1) * .9; const end = Math.sqrt(clamp(1 - Math.pow(Math.abs(x) / .9, 6), 0, 1)); const h = (.1 + .34 * voice(t * .9 - x * .7)) * end; return [x, (p.u2 * 2 - 1) * h * .5]; },
+    thinking: (p, t) => { const r = Math.sqrt(.46 * .46 + p.u1 * (.8 * .8 - .46 * .46)); const th = p.u2 * TAU + t * (.7 + .25 * p.u1); const rr = r + .045 * Math.sin(th * 3 - t * 1.4); return [Math.cos(th) * rr, Math.sin(th) * rr]; },
+    responding: (p, t, tau) => {
+      const rows = [[-.3, 1.5], [0, 1.3], [.3, .8]], left = -.75;
+      const ri = Math.min(2, Math.floor(p.u2 * 3)), fr = (p.u2 * 3) % 1, [ry, w] = rows[ri];
+      const head = (tau * .55) % 3.6, local = (ri + p.u1) - head, bump = Math.exp(-local * local * 30);
+      return [left + p.u1 * w + bump * .03, ry + (fr - .5) * (.035 + .16 * bump)];
+    },
+    waiting: (p, t) => { const b = 1 + .03 * Math.sin(t * 1.3); const [x, y] = squarePt(Math.sqrt(p.u1), p.u2 * TAU + t * .22, .6 * b, .82); return [x, y]; },
+    done: (p, t) => { const rho = Math.sqrt(p.u1), R = .3; const th = p.u2 * TAU + t * .1; return [Math.cos(th) * rho * R, .32 + Math.sin(th) * rho * R * .9]; },
+    error: (p, t) => {
+      let a = p.u1, b = p.u2; if (a + b > 1) { a = 1 - a; b = 1 - b; }
+      const A = [0, -.62], B = [.66, .5], C = [-.66, .5];
+      const x = A[0] + a * (B[0] - A[0]) + b * (C[0] - A[0]), y = A[1] + a * (B[1] - A[1]) + b * (C[1] - A[1]);
+      return [x + Math.sin(t * .7 + p.a * 9) * .03, y + .05 + Math.cos(t * .6 + p.a * 7) * .03];
+    },
+    offline: (p, t) => [(p.u1 * 2 - 1) * .95 + Math.sin(t * .2 + p.a * 5) * .01, .25 + (p.u2 - .5) * .05],
+    searching: (p, t) => {
+      const c = Math.min(2, Math.floor(p.u2 * 3)), f = (p.u2 * 3) % 1;
+      const orbit = .52 + .14 * Math.sin(t * .8), ang = c * TAU / 3 + t * .5;
+      const rho = Math.sqrt(p.u1) * .19, th = f * TAU + t * 1.1;
+      return [Math.cos(ang) * orbit + Math.cos(th) * rho, Math.sin(ang) * orbit + Math.sin(th) * rho];
+    },
+    suggesting: (p, t, tau) => {
+      const m = tau % 6.5, rho = Math.sqrt(p.u1), th = p.u2 * TAU + t * .6;
+      const R = m < 1 ? lerp(.72, .16, ease(m)) : m < 5.4 ? .16 : lerp(.16, .72, ease((m - 5.4) / 1.1));
+      if (p.k < .2 && m > 1.6 && m < 5.4) return [.78 + Math.cos(th) * rho * .09, .62 + Math.sin(th) * rho * .09];
+      return [Math.cos(th) * rho * R, Math.sin(th) * rho * R];
+    },
+    scheduling: (p, t, tau) => {
+      const m = tau % 5.5, fill = m < 3 ? ease(clamp(m / 2.6, 0, 1)) : m < 4.4 ? 1 : 1 - ease((m - 4.4) / 1.1);
+      const x = (p.u1 * 2 - 1) * .75, row = p.u2;
+      if (row <= fill) return [x * .98, -.3 + row * .6];
+      return [lerp(-.6, .6, p.u1) + Math.sin(t * 1.2 + p.a * 6) * .02, -.62 + (row - fill) * .12];
+    }
+  };
+  const INFO = {
+    idle: ['Idle', 'Circle', 'Available; nothing is happening.', 'A slow swirl. The edge stays soft and a little uneven.'],
+    summoned: ['Summoned', 'Small circle', 'You open Ask AI or press ⌘J.', 'The circle tightens and moves toward the input.'],
+    listening: ['Listening', 'Pill', 'Voice input.', 'Stretches into a pill that swells with your voice, left to right.'],
+    thinking: ['Thinking', 'Donut', 'Checking calendars or working out a plan.', 'Particles circulate around the ring while slow waves pass through.'],
+    responding: ['Responding', 'Lines', 'A reply streams in.', 'Three lines, like text. A soft swell travels along them, left to right, as the reply is written.'],
+    waiting: ['Waiting on you', 'Rounded square', 'A suggestion or plan needs your OK.', 'Holds still and breathes; particles loop slowly inside the square.'],
+    done: ['Done', 'Small circle, low', 'You accepted, or the task finished.', 'Everything slows and settles into a small, calm circle.'],
+    error: ['Error', 'Triangle', 'Something failed.', 'A soft triangle with loose edges that sinks a little. No shaking.'],
+    offline: ['Offline', 'Thin line', 'No connection, or a calendar needs attention.', 'A sparse, faded line that barely moves.'],
+    searching: ['Searching nearby', 'Three circles', 'Looking for local events, libraries and restaurants.', 'Splits into three small circles that orbit out and back.'],
+    suggesting: ['Suggesting', 'Circle → dot', 'It found something.', 'Condenses to a point, then a small group travels to the suggestion.'],
+    scheduling: ['Scheduling', 'Rectangle', 'Adding an event or applying a plan.', 'Pours into the shape of the time slot, top to bottom.']
+  };
+  const ORDER = ['idle', 'summoned', 'listening', 'thinking', 'responding', 'waiting', 'done', 'error', 'offline', 'searching', 'suggesting', 'scheduling'];
+  const FEEL = { offline: { speed: .45, agile: 1.4, alpha: .35, flow: .2 }, done: { speed: .9, agile: 2.4, alpha: 1, flow: .6 }, error: { speed: .8, agile: 2, alpha: .75, flow: .7 }, waiting: { speed: 1, agile: 2.6, alpha: 1, flow: .6 } };
+  const BASE_FEEL = { speed: 1.5, agile: 3.2, alpha: 1, flow: 1 };
+
+  /* shared current: a smooth, time-varying field so neighbors travel in bands */
+  function current(x, y, t) {
+    const a = Math.sin(x * 1.9 + t * .45) + Math.sin(y * 2.4 - t * .35) + Math.sin((x + y) * 1.3 + t * .2);
+    const b = Math.cos(x * 2.2 - t * .3) - Math.sin(y * 1.6 + t * .5) + Math.cos((x - y) * 1.1 - t * .25);
+    return [Math.cos(a * 1.4), Math.sin(b * 1.4)];
+  }
+
+  let INK = [24, 24, 27];
+  function readInk() { const c = getComputedStyle(root).getPropertyValue('--ink').trim(); const n = parseInt(c.slice(1), 16); INK = [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  readInk();
+
+  const swarms = [];
+  class Swarm {
+    constructor(canvas, o) {
+      this.c = canvas; this.ctx = canvas.getContext('2d');
+      this.o = Object.assign({ n: 900, size: 1.25, scale: .36, state: 'idle', seed: 1 }, o);
+      this.state = this.o.state; this.prev = this.state; this.changeT = performance.now() / 1000 - 20; this.visible = true; this.feel = Object.assign({}, BASE_FEEL, FEEL[this.state] || {});
+      this.resize();
+      let s = this.o.seed * 7919 + 13; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+      this.parts = [];
+      for (let i = 0; i < this.o.n; i++) this.parts.push({ u1: r(), u2: r(), a: r(), k: r(), d: r() * .55, x: (r() - .5) * 2, y: (r() - .5) * 1.4, vx: 0, vy: 0, sz: .7 + r() * .6, al: .45 + r() * .5 });
+      // start already in shape
+      const t = performance.now() / 1000;
+      for (const p of this.parts) { const [x, y] = this.target(p, t); p.x = x; p.y = y; }
+      swarms.push(this);
+      if (window.ResizeObserver) new ResizeObserver(() => { this.resize(); if (reduced()) this.draw(4, 0, true); }).observe(canvas);
+    }
+    resize() { const w = Math.max(1, this.c.clientWidth), h = Math.max(1, this.c.clientHeight); this.c.width = Math.round(w * DPR); this.c.height = Math.round(h * DPR); this.W = this.c.width; this.H = this.c.height; this.U = Math.min(this.W, this.H) * this.o.scale; this.cx = this.W / 2; this.cy = this.H / 2; }
+    set(state) {
+      if (state === this.state) return;
+      this.prev = this.state; this.state = state; this.changeT = performance.now() / 1000;
+      this.feel = Object.assign({}, BASE_FEEL, FEEL[state] || {});
+      // particles leave one side first: order by current x
+      for (const p of this.parts) p.d = clamp((p.x + 1) / 2, 0, 1) * .55 + p.a * .08;
+      if (reduced()) this.draw(4, 0, true);
+    }
+    target(p, t, st) {
+      st = st || this.state;
+      const tau = t - this.changeT;
+      return SHAPES[st](p, t, tau);
+    }
+    draw(t, dt, still) {
+      const ctx = this.ctx, U = this.U, cx = this.cx, cy = this.cy, f = this.feel;
+      const since = t - this.changeT;
+      const ag = 1 - Math.exp(-dt * f.agile), maxV = f.speed;
+      let alphaMul = f.alpha;
+      for (const p of this.parts) {
+        const st = since < p.d ? this.prev : this.state;
+        const [tx, ty] = this.target(p, still ? 4 : t, st);
+        if (still) { p.x = tx; p.y = ty; continue; }
+        const [hx, hy] = this.target(p, t + 1 / 30, st);
+        const dx = tx - p.x, dy = ty - p.y, d = Math.hypot(dx, dy);
+        const ff = clamp(1 - d * 4, 0, 1);
+        let vx = (hx - tx) * 30 * ff, vy = (hy - ty) * 30 * ff;
+        if (d > 1e-4) { const sp = Math.min(maxV, d * 3.4); vx += dx / d * sp; vy += dy / d * sp; }
+        const moving = since - p.d < 1.8;
+        const tr = moving ? clamp(d * 3, 0, 1) * f.flow : 0;
+        if (tr > .01) { const [fx, fy] = current(p.x, p.y, t); vx += fx * .55 * tr; vy += fy * .55 * tr; }
+        const k = d < .12 ? 1 - Math.exp(-dt * 12) : ag;
+        p.vx += (vx - p.vx) * k; p.vy += (vy - p.vy) * k;
+        p.x += p.vx * dt; p.y += p.vy * dt;
+      }
+      ctx.clearRect(0, 0, this.W, this.H);
+      ctx.fillStyle = `rgb(${INK[0]},${INK[1]},${INK[2]})`;
+      const buckets = [[], [], [], []];
+      for (const p of this.parts) { const a = p.al * alphaMul; const bi = Math.min(3, Math.floor(a * 4)); buckets[bi].push(cx + p.x * U, cy + p.y * U, p.sz * this.o.size * DPR); }
+      buckets.forEach((arr, bi) => {
+        if (!arr.length) return;
+        ctx.globalAlpha = (bi + 1) / 4 * .95; ctx.beginPath();
+        for (let i = 0; i < arr.length; i += 3) { ctx.moveTo(arr[i] + arr[i + 2], arr[i + 1]); ctx.arc(arr[i], arr[i + 1], arr[i + 2], 0, TAU); }
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  /* ---------- loop ---------- */
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (!reduced()) for (const s of swarms) if (s.visible) s.draw(now / 1000, dt, false);
+    requestAnimationFrame(loop);
+  }
+  const stillAll = () => swarms.forEach(s => s.draw(4, 0, true));
+  const mq = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+  const motionBtn = $('#motion');
+  function setMotion(r) { root.dataset.motion = r ? 'reduced' : 'full'; motionBtn.setAttribute('aria-checked', String(r)); if (r) stillAll(); }
+  motionBtn.addEventListener('click', () => setMotion(!reduced()));
+  if (mq && mq.addEventListener) mq.addEventListener('change', e => setMotion(e.matches));
+  const repaint = () => { readInk(); if (reduced()) stillAll(); };
+  const dq = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  if (dq && dq.addEventListener) dq.addEventListener('change', repaint);
+  new MutationObserver(repaint).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+
+  /* ---------- hero ---------- */
+  const hero = new Swarm($('#hero-cv'), { n: 1100, size: 1.3, scale: .34, state: 'idle', seed: 3 });
+  const ctl = $('#state-ctl');
+  ORDER.forEach(st => { const b = document.createElement('button'); b.type = 'button'; b.dataset.state = st; b.textContent = INFO[st][0]; b.setAttribute('aria-pressed', 'false'); ctl.appendChild(b); });
+  function heroUi(st) {
+    $$('button', ctl).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.state === st)));
+    const inf = INFO[st];
+    $('#stage-label').textContent = inf[0]; $('#stage-shape').textContent = inf[1];
+    $('#spec-shape').textContent = inf[1]; $('#spec-when').textContent = inf[2]; $('#spec-motion').textContent = inf[3];
+  }
+  let seqId = 0;
+  function heroSet(st) { hero.set(st); heroUi(st); }
+  $$('button', ctl).forEach(b => b.addEventListener('click', () => { seqId++; heroSet(b.dataset.state); }));
+  const SEQ = [['idle', 2200], ['summoned', 1800], ['listening', 3200], ['thinking', 3400], ['searching', 3600], ['suggesting', 4800], ['waiting', 3200], ['scheduling', 3600], ['done', 3000], ['idle', 0]];
+  $('#play').addEventListener('click', async () => {
+    const my = ++seqId;
+    for (const [st, ms] of SEQ) { if (my !== seqId) return; heroSet(st); if (ms) await new Promise(r => setTimeout(r, reduced() ? Math.min(ms, 1200) : ms)); }
+  });
+  heroUi('idle');
+
+  /* ---------- grid ---------- */
+  const grid = $('#grid');
+  ORDER.forEach((st, i) => {
+    const inf = INFO[st];
+    const tile = document.createElement('article'); tile.className = 'tile';
+    tile.innerHTML = `<div class="tile-cv"><canvas class="cv" role="img" aria-label="${inf[0]}: ${inf[1]}"></canvas></div><div class="tile-copy"><h3>${inf[0]}<span>${inf[1]}</span></h3><p>${inf[2]}</p></div>`;
+    grid.appendChild(tile);
+    new Swarm($('canvas', tile), { n: 360, size: 1, scale: .33, state: st, seed: 11 + i });
+  });
+
+  /* ---------- small sizes ---------- */
+  $$('canvas[data-small]').forEach((c, i) => {
+    const big = c.classList.contains('s40');
+    new Swarm(c, { n: big ? 70 : 22, size: big ? .75 : .7, scale: big ? .36 : .4, state: c.dataset.small, seed: 40 + i });
+  });
+
+  /* ---------- start ---------- */
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => swarms.forEach(s => { if (s.c === e.target) s.visible = e.isIntersecting; })), { rootMargin: '60px' });
+    swarms.forEach(s => io.observe(s.c));
+  }
+  setMotion(!!(mq && mq.matches));
+  requestAnimationFrame(loop);
+})();
+</script>

@@ -4,4 +4,4 @@ An AI-powered calendar.
 
 ## Status
 
-Early setup — project structure and stack to be decided.
+Design is done in Figma. Start with [`docs/design-handoff.md`](docs/design-handoff.md): the screens, the components, the tokens and the decisions behind them. The approved motion prototype for the AI mark is in [`design/assistant-mark-prototype.html`](design/assistant-mark-prototype.html).
