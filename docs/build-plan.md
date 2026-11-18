@@ -45,7 +45,7 @@ Source of truth: the design system kit (see `CLAUDE.md`). Approved screens: Pass
 - Settings: sub-nav (General, Planning, Suggestions, Notifications, Connectors & interests, Account) that scrolls to sections and tracks the active one. All fields work against the store: name, time zone, week start (drives Week/Month), theme, working hours, morning plan, default task length, protect family time, suggestion count, budget, kid-friendly first, weather, home area, interests link, notification toggles, reminders.
 
 ### 6. Assistant
-- The design shows the Assistant as a **right-side panel** over the current page (not a separate page). The top-bar mark opens it; ⌘J too. The `/assistant` route goes away.
+- The design shows the Assistant as a **right-side panel** over the current page (not a separate page). The top-bar mark opens it; ⌘J too. The `/assistant` route is gone.
 - Panel: header + close, Message (AC) bubbles, Plan (AC) inside replies, suggestion chips, Prompt Input (AC) (attach, mic, send), Thinking (AC), Confirmation (AC).
 - Assistant Mark (AC) finished: all 12 states wired to what the assistant is doing (summoned on open, thinking, responding, waiting on you, scheduling on apply, done), sizes L/M/S, reduced motion.
 - Replies are scripted mock responses (no AI model yet); applying a plan really changes the calendar.

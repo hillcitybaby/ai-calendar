@@ -1,5 +1,7 @@
 "use client";
 
+import { AssistantPanel } from "@/components/assistant/assistant-panel";
+import { AssistantProvider } from "@/components/assistant/assistant-provider";
 import { StoreProvider } from "@/lib/store";
 
 import { Sidebar } from "./sidebar";
@@ -20,10 +22,13 @@ export function AppShell({
   return (
     <StoreProvider>
       <ShellProvider defaultCollapsed={defaultCollapsed}>
-        <div className="flex h-dvh overflow-hidden bg-background">
-          <ShellSidebar />
-          <main className="flex min-w-0 flex-1 flex-col">{children}</main>
-        </div>
+        <AssistantProvider>
+          <div className="flex h-dvh overflow-hidden bg-background">
+            <ShellSidebar />
+            <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+          </div>
+          <AssistantPanel />
+        </AssistantProvider>
       </ShellProvider>
     </StoreProvider>
   );

@@ -1,7 +1,7 @@
-import Link from "next/link";
+"use client";
 
 import { AssistantMark } from "@/components/assistant/assistant-mark";
-import type { AssistantState } from "@/components/assistant/swarm";
+import { useAssistant } from "@/components/assistant/assistant-provider";
 import { cn } from "@/lib/utils";
 
 /**
@@ -12,7 +12,6 @@ export function TopBar({
   title,
   leading,
   actions,
-  assistantState = "idle",
   className,
 }: {
   title: React.ReactNode;
@@ -20,7 +19,6 @@ export function TopBar({
   leading?: React.ReactNode;
   /** Controls before the Assistant Mark (e.g. view toggle, search). */
   actions?: React.ReactNode;
-  assistantState?: AssistantState;
   className?: string;
 }) {
   return (
@@ -34,20 +32,27 @@ export function TopBar({
       {leading}
       <div className="min-w-0 flex-1" />
       {actions}
-      <AssistantEntry state={assistantState} />
+      <AssistantEntry />
     </header>
   );
 }
 
-/** The resting particle array *is* the entry point: there is no "Ask AI" button. */
-function AssistantEntry({ state }: { state: AssistantState }) {
+/**
+ * The resting particle array *is* the entry point: there is no "Ask AI" button.
+ * It shows what the assistant is doing (thinking, waiting on you, scheduling…).
+ */
+function AssistantEntry() {
+  const { open, toggle, markState } = useAssistant();
   return (
-    <Link
-      href="/assistant"
-      aria-label="Open assistant"
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={open ? "Close assistant" : "Open assistant"}
+      aria-expanded={open}
+      aria-keyshortcuts="Meta+J Control+J"
       className="flex size-8 shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
     >
-      <AssistantMark state={state} size={32} decorative />
-    </Link>
+      <AssistantMark state={markState} size={32} decorative />
+    </button>
   );
 }

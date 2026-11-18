@@ -5,7 +5,7 @@ Things the code needed that the design system kit doesn't have yet, or where the
 | Milestone | Component | Change needed | Why |
 | --- | --- | --- | --- |
 | 1 | Sidebar Calendar (AC) | Delete, or document where it's used | Sidebar (AC) now uses Calendar Legend Item (AC); nothing uses this one. |
-| 1 | Suggestion (AC), Local Event Card (AC) | Delete | Replaced by Suggestion Card (AC) per the handoff doc. |
+| 1 | Local Event Card (AC) | Delete | Replaced by Suggestion Card (AC) per the handoff doc. (Suggestion (AC) is the AI Elements prompt chip and is used by the Assistant; keep it.) |
 | 2 | Event Block (AC), State=Suggested | Confirm the style | The kit draws suggested events with a gray (muted-foreground) dashed outline, a subtle fill and a 16px Assistant Mark. The handoff doc says "dashed outline in the calendar's color", and the Pass 5 Today/Week frames use the Preview style for suggestions. The code follows the kit. |
 | 2 | Event Block (AC) | Add a compact size for short events | Events under 30 minutes need a 20px minimum height and tighter padding (title only); the kit only shows 72px blocks. |
 | 2 | Event Chip (AC) | Add a Suggested state | Suggested all-day/month events need a dashed variant; the code uses a dashed muted outline on the subtle fill, matching Event Block Suggested. |
@@ -32,3 +32,8 @@ Things the code needed that the design system kit doesn't have yet, or where the
 | 5 | Settings › Account | Design the section | Not in Pass 5. The code has one row, "Reset example data". |
 | 5 | Settings › Theme | Note | Dark and System save the choice but the app stays light until a dark theme is designed. The description says so. |
 | 5 | Sidebar on Settings / Connectors | Confirm | Those Pass 5 frames hide the Calendars group; the code keeps it on every page, as the kit's Sidebar (AC) does. |
+| 6 | Sheet (AC) for the Assistant | Confirm behavior | Built as a non-modal 440px panel docked on the right (no dimmed overlay, the calendar stays usable), matching the Pass 5 Assistant frame. Esc or the close button closes it; ⌘J toggles it. |
+| 6 | Prompt Input (AC), Listening | Not wired | The kit has a Listening state; voice input and attachments show a "not available yet" toast in the prototype. |
+| 6 | Confirmation (AC) | Unused | Nothing in the Pass 5 Assistant frame uses it; replies with changes use Plan (AC). |
+| 6 | Plan (AC) inside chat | Note | Applied plans show "Applied to your calendar" as the subtitle and dim their steps; review mode reuses the milestone 2 per-step Apply / Skip. |
+| 6 | Assistant greeting | Confirm copy | The panel opens with "Good morning/afternoon/evening, <name>. What should we plan?" No Pass 5 frame shows an empty conversation. |
