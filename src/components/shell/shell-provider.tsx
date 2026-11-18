@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { EXAMPLE_CALENDARS, type Calendar } from "@/lib/calendars";
+import { useStore } from "@/lib/store";
 
 import { SIDEBAR_COOKIE } from "./constants";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
@@ -14,7 +15,7 @@ type ShellContextValue = {
   calendars: Calendar[];
   hiddenCalendarIds: ReadonlySet<string>;
   toggleCalendar: (id: string) => void;
-  /** Count shown next to Suggestions in the sidebar. Mock until real data lands. */
+  /** New suggestions, shown next to Suggestions in the sidebar. */
   suggestionCount: number;
 };
 
@@ -33,6 +34,8 @@ export function ShellProvider({
   defaultCollapsed?: boolean;
   children: React.ReactNode;
 }) {
+  const { state, ready } = useStore();
+  const suggestionCount = ready ? state.suggestions.filter((s) => s.status === "new").length : 0;
   const [collapsed, setCollapsedState] = React.useState(defaultCollapsed);
   const [hiddenCalendarIds, setHidden] = React.useState<ReadonlySet<string>>(
     () => new Set(),
@@ -77,9 +80,9 @@ export function ShellProvider({
       calendars: EXAMPLE_CALENDARS,
       hiddenCalendarIds,
       toggleCalendar,
-      suggestionCount: 3,
+      suggestionCount,
     }),
-    [collapsed, setCollapsed, toggleCollapsed, hiddenCalendarIds, toggleCalendar],
+    [collapsed, setCollapsed, toggleCollapsed, hiddenCalendarIds, toggleCalendar, suggestionCount],
   );
 
   return <ShellContext.Provider value={value}>{children}</ShellContext.Provider>;

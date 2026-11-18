@@ -1,5 +1,7 @@
 "use client";
 
+import { StoreProvider } from "@/lib/store";
+
 import { Sidebar } from "./sidebar";
 import { SidebarRail } from "./sidebar-rail";
 import { ShellProvider, useShell } from "./shell-provider";
@@ -16,12 +18,14 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <ShellProvider defaultCollapsed={defaultCollapsed}>
-      <div className="flex h-dvh overflow-hidden bg-background">
-        <ShellSidebar />
-        <main className="flex min-w-0 flex-1 flex-col">{children}</main>
-      </div>
-    </ShellProvider>
+    <StoreProvider>
+      <ShellProvider defaultCollapsed={defaultCollapsed}>
+        <div className="flex h-dvh overflow-hidden bg-background">
+          <ShellSidebar />
+          <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+        </div>
+      </ShellProvider>
+    </StoreProvider>
   );
 }
 

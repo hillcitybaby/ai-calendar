@@ -8,7 +8,7 @@ export default function CalendarLayout({ children }: { children: React.ReactNode
       <Suspense fallback={<div className="h-[60px] shrink-0 border-b border-border" />}>
         <CalendarTopBar />
       </Suspense>
-      <div className="min-h-0 flex-1 overflow-auto">{children}</div>
+      <div className="min-h-0 flex-1">{children}</div>
     </>
   );
 }

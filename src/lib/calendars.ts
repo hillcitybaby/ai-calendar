@@ -38,3 +38,8 @@ export const EXAMPLE_CALENDARS: Calendar[] = [
   { id: "date-nights", name: "Date nights", color: "pink" },
   { id: "local-events", name: "Local events", color: "teal" },
 ];
+
+/** The color of a calendar by id; slate for unknown calendars. */
+export function calendarColor(calendarId: string): CalendarColor {
+  return EXAMPLE_CALENDARS.find((c) => c.id === calendarId)?.color ?? "slate";
+}
