@@ -9,6 +9,7 @@ import { StoreProvider } from "@/lib/store";
 
 import { Sidebar } from "./sidebar";
 import { SidebarRail } from "./sidebar-rail";
+import { TabBar } from "./tab-bar";
 import { ShellProvider, useShell } from "./shell-provider";
 
 /** Example identity until accounts exist. Keep generic: this repo is public. */
@@ -28,7 +29,10 @@ export function AppShell({
         <AssistantProvider>
           <div className="flex h-dvh overflow-hidden bg-background">
             <ShellSidebar />
-            <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+              <TabBar />
+            </div>
           </div>
           <AssistantPanel />
         </AssistantProvider>

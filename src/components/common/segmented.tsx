@@ -12,12 +12,15 @@ export function Segmented<T extends string>({
   onChange,
   options,
   label,
+  stretch,
   className,
 }: {
   value: T;
   onChange: (value: T) => void;
   options: { value: T; label: string }[];
   label: string;
+  /** Fill the width, items sharing it equally (mobile Calendar tab). */
+  stretch?: boolean;
   className?: string;
 }) {
   return (
@@ -29,13 +32,17 @@ export function Segmented<T extends string>({
       }}
       aria-label={label}
       spacing={1}
-      className={cn("rounded-lg border border-border p-1", className)}
+      className={cn("rounded-lg border border-border p-1", stretch && "w-full", className)}
     >
       {options.map((o) => (
         <ToggleGroupItem
           key={o.value}
           value={o.value}
-          className="h-8 rounded-md px-3 text-foreground hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
+          className={cn(
+            "h-8 rounded-md px-3 text-foreground",
+            stretch && "flex-1",
+            "hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
+          )}
         >
           {o.label}
         </ToggleGroupItem>

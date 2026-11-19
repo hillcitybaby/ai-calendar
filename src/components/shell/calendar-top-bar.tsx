@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { format } from "date-fns";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/common/segmented";
 import {
+  MOBILE_VIEW_PATHS,
   parseDateParam,
   prevNextLabels,
   shiftDate,
@@ -19,6 +21,7 @@ import {
 import { useStore } from "@/lib/store";
 import { useToday } from "@/lib/use-today";
 
+import { MobileHeaderButton } from "./mobile-header";
 import { TopBar } from "./top-bar";
 
 const VIEWS: { value: CalendarView; label: string }[] = [
@@ -41,9 +44,21 @@ export function CalendarTopBar() {
   const href = (v: CalendarView, d?: Date) =>
     d ? `${VIEW_PATHS[v]}?date=${toDateParam(d)}` : VIEW_PATHS[v];
   const labels = prevNextLabels(view);
+  // Mobile: Today is its own tab; Day/Week/Month live in the Calendar tab.
+  const calendarTab = pathname !== "/today";
+  const mobileHref = (v: CalendarView) => `${MOBILE_VIEW_PATHS[v]}${raw ? `?date=${toDateParam(date)}` : ""}`;
 
   return (
+    <>
     <TopBar
+      mobile={{
+        title: calendarTab ? <span suppressHydrationWarning>{format(date, "MMMM")}</span> : "Today",
+        trailing: (
+          <MobileHeaderButton aria-label="Search">
+            <Search />
+          </MobileHeaderButton>
+        ),
+      }}
       title={<span suppressHydrationWarning>{viewTitle(date, view, state.settings.weekStartsOn)}</span>}
       leading={
         <div className="flex items-center gap-1 pl-3">
@@ -76,5 +91,17 @@ export function CalendarTopBar() {
         </>
       }
     />
+    {calendarTab && (
+      <div className="shrink-0 px-4 pt-1 pb-2 md:hidden">
+        <Segmented
+          value={view}
+          onChange={(v) => router.push(mobileHref(v))}
+          options={VIEWS}
+          label="Calendar view"
+          stretch
+        />
+      </div>
+    )}
+    </>
   );
 }

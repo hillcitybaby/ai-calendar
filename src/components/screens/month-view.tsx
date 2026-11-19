@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   addDays,
+  addMonths,
   endOfMonth,
   endOfWeek,
   format,
@@ -13,15 +15,18 @@ import {
   startOfWeek,
 } from "date-fns";
 
+import { MonthAgenda } from "@/components/mobile/month-agenda";
 import { EventChip } from "@/components/scheduler/event-chip";
 import { SchedulerDnd } from "@/components/scheduler/scheduler-dnd";
 import { TaskPanel } from "@/components/tasks/task-panel";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { toDateParam } from "@/lib/calendar-view";
 import { calendarColor } from "@/lib/calendars";
 import { eventsOnDay, tasksForMonth } from "@/lib/schedule";
 import { useStore } from "@/lib/store";
 import type { CalendarEvent } from "@/lib/types";
 import { useCalendarDate, useVisibleEvents } from "@/lib/use-calendar";
+import { useIsMobile } from "@/lib/use-media";
 import { cn } from "@/lib/utils";
 
 const MAX_CHIPS = 3;
@@ -35,15 +40,37 @@ export function monthGrid(date: Date, weekStartsOn: 0 | 1) {
   return days;
 }
 
-/** Month: "This month" list beside a 6-week grid of Event Chips. */
+/**
+ * Month: "This month" list beside a grid of Event Chips.
+ * Mobile: a compact grid with event dots and the selected day's agenda.
+ */
 export function MonthView() {
   const { state, ready } = useStore();
   const { date, today } = useCalendarDate();
   const events = useVisibleEvents();
+  const mobile = useIsMobile();
+  const router = useRouter();
   if (!ready) return null;
 
   const weekStartsOn = state.settings.weekStartsOn;
   const days = monthGrid(date, weekStartsOn);
+
+  if (mobile) {
+    const go = (d: Date) => router.replace(`/month?date=${toDateParam(d)}`, { scroll: false });
+    return (
+      <MonthAgenda
+        days={days}
+        month={date}
+        selected={date}
+        today={today}
+        events={events}
+        onSelect={go}
+        onPrev={() => go(addMonths(date, -1))}
+        onNext={() => go(addMonths(date, 1))}
+      />
+    );
+  }
+
   const tasks = tasksForMonth(state.tasks, date);
 
   return (

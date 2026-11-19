@@ -41,3 +41,12 @@ Things the code needed that the design system kit doesn't have yet, or where the
 | 7a | Work Task (AC) in two columns | Confirm | On tablet Week and Month, the list sits below the calendar in two columns; cards in a row stretch to the taller card's height, so a short card gains empty space. The kit only shows the single-column 304px card. |
 | 7a | Suggestion Card (AC) width | Confirm | Tablet Suggestions uses two cards per row filling the content width (about 352px each at 834px), not the fixed desktop card width. |
 | 7a | Settings rows on tablet | Confirm | With the 176px sub-nav, the Toggle Group rows still fit beside their label at 834px; long descriptions wrap. |
+| 7b | Tab Bar (AC) home indicator | Note | The kit draws the home indicator inside the bar. On the web the device draws its own, so the code pads for the safe area instead and leaves it out. The same goes for Status Bar (AC). |
+| 7b | Assistant Mark (AC), 36px | Add the size | Tab Bar (AC) uses a 36px mark, which isn't one of the kit sizes (L 120, M 40, S 20). The code adds a 36 preset. |
+| 7b | Mobile Week strip | New component | Weekday letter, 36px date (filled when selected, bold for today) and up to three 4px dots in calendar colors. Swiping it changes the week. |
+| 7b | Mobile Month grid + agenda row | New components | The compact date grid with dots, and the agenda row (time, 3px calendar bar dashed for suggested, title, time range). Long titles wrap; suggested rows end with "· suggested". |
+| 7b | "To schedule" bottom sheet | New component | Peeks above the tab bar (handle, title, count, planned time, suggestion count); tap or drag it up to about 80% height. Inside: Add Task, Work Tasks and compact Suggestion Cards in one column. |
+| 7b | Calendar tab › Day | Design the screen | Pass 6 has no mobile Day frame. The code shows the day's Time Grid with its Day Header at /day, so the Today tab stays the plan. |
+| 7b | Moving between weeks, months and days on mobile | Design a control | The frames have no prev/next. The code uses swipes (strip, month grid, day timeline); there's no visible control or "Today" button yet. |
+| 7b | Mobile Month "This month" tasks | Confirm | The Month frame shows only the grid and agenda, so month to-dos aren't reachable on mobile. They could reuse the bottom sheet. |
+| 7b | Mobile Today | Note | Per the frame: capacity row titled with the date ("Thu, Nov 19"), plan and to-dos, no time grid and no day navigation. |

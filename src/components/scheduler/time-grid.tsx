@@ -54,25 +54,31 @@ export function TimeGrid({
   days,
   today,
   events,
+  hideHeader,
   className,
+  hourClassName,
 }: {
   days: Date[];
   today: Date;
   events: CalendarEvent[];
+  /** Mobile Week: the 7-day strip above stands in for the day headers. */
+  hideHeader?: boolean;
   className?: string;
+  /** Fixed hour-row height (mobile scrolls the grid instead of fitting it). */
+  hourClassName?: string;
 }) {
   const now = useNow();
   const allDay = events.filter((e) => e.allDay);
   return (
     <div className={cn("flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-background", className)}>
-      <div className="flex shrink-0">
+      <div className={cn("flex shrink-0", hideHeader && "hidden")}>
         <div className="w-14 shrink-0" />
         {days.map((d) => (
           <DayHeader key={d.toISOString()} date={d} today={today} />
         ))}
       </div>
 
-      <div className="flex shrink-0">
+      <div className={cn("flex shrink-0", hideHeader && "[&>*]:border-t-0")}>
         <div className="flex min-h-7 w-14 shrink-0 items-center justify-end border-t border-border pr-2 text-xs text-muted-foreground">
           All day
         </div>
@@ -87,7 +93,7 @@ export function TimeGrid({
 
       <div className="relative flex min-h-0 flex-1 flex-col">
         {HOURS.map((h) => (
-          <div key={h} className="flex min-h-0 flex-1">
+          <div key={h} className={cn("flex min-h-0 flex-1", hourClassName)}>
             <div className="w-14 shrink-0 border-t border-border pt-0.5 pr-2 text-right text-xs text-muted-foreground">
               {format(new Date(2000, 0, 1, h), "h a")}
             </div>

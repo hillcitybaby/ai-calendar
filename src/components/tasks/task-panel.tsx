@@ -40,23 +40,49 @@ export function TaskPanel({
           <span className="sr-only"> open</span>
         </span>
       </h2>
-      <div className="grid grid-cols-2 gap-2 xl:flex xl:flex-col">
+      <TaskPanelBody tasks={tasks} bucket={bucket} suggestions={suggestions} layout="responsive" />
+    </section>
+  );
+}
+
+/**
+ * Add Task, Work Tasks and compact suggestions. "responsive" is two columns on tablet and one
+ * on desktop; "single" is one column (the mobile To schedule sheet).
+ */
+export function TaskPanelBody({
+  tasks,
+  bucket,
+  suggestions = [],
+  layout,
+}: {
+  tasks: Task[];
+  bucket: TaskBucket;
+  suggestions?: Suggestion[];
+  layout: "responsive" | "single";
+}) {
+  const responsive = layout === "responsive";
+  return (
+    <>
+      <div className={cn("gap-2", responsive ? "grid grid-cols-2 xl:flex xl:flex-col" : "flex flex-col")}>
         <AddTask
           bucket={bucket}
           plannedMin={totalMinutes(tasks.filter((t) => !t.done))}
-          className="col-span-2"
+          className={responsive ? "col-span-2" : undefined}
         />
         {tasks.map((t) => (
           <DraggableWorkTask key={t.id} task={t} />
         ))}
       </div>
       {suggestions.length > 0 && (
-        <div className="grid grid-cols-2 gap-2 xl:flex xl:flex-col xl:gap-4" aria-label="Suggestions">
+        <div
+          className={cn(responsive ? "grid grid-cols-2 gap-2 xl:flex xl:flex-col xl:gap-4" : "flex flex-col gap-2")}
+          aria-label="Suggestions"
+        >
           {suggestions.map((s) => (
             <SuggestionCardCompact key={s.id} s={s} />
           ))}
         </div>
       )}
-    </section>
+    </>
   );
 }

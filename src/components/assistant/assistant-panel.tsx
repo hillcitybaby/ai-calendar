@@ -41,7 +41,7 @@ export function AssistantPanel() {
         if (e.key === "Escape") setOpen(false);
       }}
       className={cn(
-        "fixed inset-y-0 right-0 z-40 flex w-[440px] flex-col border-l border-border bg-background shadow-lg transition-transform duration-300 ease-out motion-reduce:transition-none",
+        "fixed inset-y-0 right-0 z-40 flex w-full flex-col md:w-[440px] md:border-l border-border bg-background shadow-lg transition-transform duration-300 ease-out motion-reduce:transition-none",
         open ? "translate-x-0" : "translate-x-full",
       )}
     >

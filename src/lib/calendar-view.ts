@@ -19,7 +19,15 @@ export const VIEW_PATHS: Record<CalendarView, string> = {
   month: "/month",
 };
 
+/** Mobile keeps Today as its own tab, so the Calendar tab's Day view lives at /day. */
+export const MOBILE_VIEW_PATHS: Record<CalendarView, string> = {
+  day: "/day",
+  week: "/week",
+  month: "/month",
+};
+
 export function viewFromPath(pathname: string): CalendarView | null {
+  if (pathname === "/day" || pathname.startsWith("/day/")) return "day";
   const entry = Object.entries(VIEW_PATHS).find(
     ([, p]) => pathname === p || pathname.startsWith(`${p}/`),
   );

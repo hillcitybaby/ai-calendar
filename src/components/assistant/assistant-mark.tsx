@@ -14,14 +14,15 @@ import {
 } from "./swarm";
 
 /**
- * Kit sizes: L 120, M 40, S 20. The top bar uses a 32px resting mark; Plan (AC) headers and
- * suggested Event Blocks use 16px.
+ * Kit sizes: L 120, M 40, S 20. The top bar uses a 32px resting mark, Tab Bar (AC) a 36px one;
+ * Plan (AC) headers and suggested Event Blocks use 16px.
  */
-export type AssistantMarkSize = "L" | "M" | "S" | 32 | 16 | 14;
+export type AssistantMarkSize = "L" | "M" | "S" | 36 | 32 | 16 | 14;
 
 const PRESETS: Record<string, Pick<SwarmOptions, "n" | "size" | "scale"> & { px: number }> = {
   L: { px: 120, n: 260, size: 1, scale: 0.33 },
   M: { px: 40, n: 70, size: 0.75, scale: 0.36 },
+  "36": { px: 36, n: 56, size: 0.74, scale: 0.37 },
   "32": { px: 32, n: 48, size: 0.72, scale: 0.38 },
   S: { px: 20, n: 22, size: 0.7, scale: 0.4 },
   "16": { px: 16, n: 18, size: 0.6, scale: 0.42 },
