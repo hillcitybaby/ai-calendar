@@ -48,9 +48,9 @@ export function MonthView() {
 
   return (
     <SchedulerDnd>
-      <div className="flex h-full min-h-0">
+      <div className="flex h-full min-h-0 flex-col xl:flex-row">
         <TaskPanel title="This month" tasks={tasks} bucket={{ kind: "month", month: format(date, "yyyy-MM") }} />
-        <section aria-label="Month calendar" className="flex min-w-0 flex-1 p-4">
+        <section aria-label="Month calendar" className="order-1 flex min-h-[420px] min-w-0 flex-1 p-4 pb-0 xl:order-2 xl:pb-4">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-background">
             <div className="grid shrink-0 grid-cols-7" role="row">
               {days.slice(0, 7).map((d) => (

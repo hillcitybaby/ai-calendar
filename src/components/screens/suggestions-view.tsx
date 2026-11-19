@@ -110,7 +110,7 @@ function Section({
         <MapPin className="size-4" aria-hidden />
         {title}
       </h2>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,362px))] gap-6">
+      <div className="grid grid-cols-2 gap-6 xl:grid-cols-[repeat(auto-fill,minmax(320px,362px))]">
         {items.map((s) => (
           <SuggestionCard key={s.id} s={s} onDismiss={() => onDismiss(s)} onAdd={() => onAdd(s)} />
         ))}

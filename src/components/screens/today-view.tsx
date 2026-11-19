@@ -38,7 +38,7 @@ export function TodayView() {
       <div className="flex h-full min-h-0">
         <section
           aria-label={heading}
-          className="flex w-[536px] shrink-0 flex-col gap-7 overflow-y-auto border-r border-border px-10 pt-10 pb-6"
+          className="flex w-[400px] shrink-0 flex-col gap-6 overflow-y-auto border-r border-border px-6 pt-6 pb-6 xl:w-[536px] xl:gap-7 xl:px-10 xl:pt-10"
         >
           <div className="flex flex-col gap-2">
             <div className="flex items-end">
@@ -70,7 +70,7 @@ export function TodayView() {
           </div>
         </section>
 
-        <section aria-label="Day calendar" className="min-w-0 flex-1 px-10 pt-8 pb-6">
+        <section aria-label="Day calendar" className="min-w-0 flex-1 px-6 pt-6 pb-6 xl:px-10 xl:pt-8">
           <TimeGrid days={[date]} today={today} events={events} />
         </section>
       </div>

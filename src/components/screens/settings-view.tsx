@@ -67,8 +67,8 @@ export function SettingsView() {
       <TopBar title="Settings" />
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
         {ready && (
-          <div className="flex items-start gap-8 p-6">
-            <nav aria-label="Settings sections" className="sticky top-6 flex w-50 shrink-0 flex-col gap-0.5">
+          <div className="flex items-start gap-6 p-6 xl:gap-8">
+            <nav aria-label="Settings sections" className="sticky top-6 flex w-44 shrink-0 flex-col gap-0.5 xl:w-50">
               {SECTIONS.map((sec) => {
                 const isActive = active === sec.id;
                 const cls = cn(
@@ -100,7 +100,7 @@ export function SettingsView() {
               })}
             </nav>
 
-            <div className="flex w-[720px] min-w-0 flex-col gap-6">
+            <div className="flex min-w-0 flex-1 flex-col gap-6 xl:w-[720px] xl:flex-none">
               <SettingsCard id="general" title="General" description="Your name, time zone and how the calendar looks.">
                 <FieldRow label="Name" value={s.name} onCommit={(v) => set({ name: v })} />
                 <FieldRow label="Time zone" value={s.timeZone} onCommit={(v) => set({ timeZone: v })} />

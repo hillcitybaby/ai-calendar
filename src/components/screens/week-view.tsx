@@ -29,14 +29,14 @@ export function WeekView() {
 
   return (
     <SchedulerDnd>
-      <div className="flex h-full min-h-0">
+      <div className="flex h-full min-h-0 flex-col xl:flex-row">
         <TaskPanel
           title="To schedule"
           tasks={tasks}
           bucket={{ kind: "week", weekStart: format(start, "yyyy-MM-dd") }}
           suggestions={suggestions}
         />
-        <section aria-label="Week calendar" className="min-w-0 flex-1 p-4">
+        <section aria-label="Week calendar" className="order-1 min-h-[420px] min-w-0 flex-1 p-4 pb-0 xl:order-2 xl:pb-4">
           <TimeGrid days={days} today={today} events={events} />
         </section>
       </div>

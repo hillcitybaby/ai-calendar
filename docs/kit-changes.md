@@ -37,3 +37,7 @@ Things the code needed that the design system kit doesn't have yet, or where the
 | 6 | Confirmation (AC) | Unused | Nothing in the Pass 5 Assistant frame uses it; replies with changes use Plan (AC). |
 | 6 | Plan (AC) inside chat | Note | Applied plans show "Applied to your calendar" as the subtitle and dim their steps; review mode reuses the milestone 2 per-step Apply / Skip. |
 | 6 | Assistant greeting | Confirm copy | The panel opens with "Good morning/afternoon/evening, <name>. What should we plan?" No Pass 5 frame shows an empty conversation. |
+| 7a | Sidebar on tablet | New state / confirm | Tablet always shows Sidebar Collapsed (AC). Its toggle opens the expanded Sidebar (AC) as an overlay drawer over a light scrim (click outside, Esc or navigating closes it). The kit has no overlay variant or scrim. |
+| 7a | Work Task (AC) in two columns | Confirm | On tablet Week and Month, the list sits below the calendar in two columns; cards in a row stretch to the taller card's height, so a short card gains empty space. The kit only shows the single-column 304px card. |
+| 7a | Suggestion Card (AC) width | Confirm | Tablet Suggestions uses two cards per row filling the content width (about 352px each at 834px), not the fixed desktop card width. |
+| 7a | Settings rows on tablet | Confirm | With the 176px sub-nav, the Toggle Group rows still fit beside their label at 834px; long descriptions wrap. |

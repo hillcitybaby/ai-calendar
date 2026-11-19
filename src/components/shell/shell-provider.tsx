@@ -11,7 +11,13 @@ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 type ShellContextValue = {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
+  /**
+   * Expand/collapse. On desktop this collapses the sidebar to the icon rail; below desktop
+   * (tablet) the rail is always shown and this opens the full sidebar as an overlay drawer.
+   */
   toggleCollapsed: () => void;
+  drawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
   calendars: Calendar[];
   hiddenCalendarIds: ReadonlySet<string>;
   toggleCalendar: (id: string) => void;
@@ -46,10 +52,11 @@ export function ShellProvider({
     document.cookie = `${SIDEBAR_COOKIE}=${next}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}; samesite=lax`;
   }, []);
 
-  const toggleCollapsed = React.useCallback(
-    () => setCollapsed(!collapsed),
-    [collapsed, setCollapsed],
-  );
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const toggleCollapsed = React.useCallback(() => {
+    if (window.matchMedia("(min-width: 1280px)").matches) setCollapsed(!collapsed);
+    else setDrawerOpen((o) => !o);
+  }, [collapsed, setCollapsed]);
 
   const toggleCalendar = React.useCallback((id: string) => {
     setHidden((prev) => {
@@ -77,12 +84,14 @@ export function ShellProvider({
       collapsed,
       setCollapsed,
       toggleCollapsed,
+      drawerOpen,
+      setDrawerOpen,
       calendars: EXAMPLE_CALENDARS,
       hiddenCalendarIds,
       toggleCalendar,
       suggestionCount,
     }),
-    [collapsed, setCollapsed, toggleCollapsed, hiddenCalendarIds, toggleCalendar, suggestionCount],
+    [collapsed, setCollapsed, toggleCollapsed, drawerOpen, hiddenCalendarIds, toggleCalendar, suggestionCount],
   );
 
   return <ShellContext.Provider value={value}>{children}</ShellContext.Provider>;
