@@ -15,6 +15,7 @@ export type ChatMessage =
       text: string;
       plan?: ChatPlan & { status: "open" | "applied" | "dismissed" };
       suggestionIds?: string[];
+      taskIds?: string[];
     };
 
 type AssistantContextValue = {
@@ -99,6 +100,7 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
       if (run !== runRef.current) return;
       setWorking(null);
       setMarkState("responding");
+      for (const action of reply.actions ?? []) dispatch(action);
       setMessages((m) => [
         ...m,
         {
@@ -107,15 +109,17 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
           text: reply.text,
           plan: reply.plan ? { ...reply.plan, status: "open" } : undefined,
           suggestionIds: reply.suggestionIds,
+          taskIds: reply.taskIds,
         },
       ]);
       await wait(900);
       if (run !== runRef.current) return;
       if (reply.plan) setMarkState("waiting");
+      else if (reply.actions?.length) settle("done", 1500);
       else if (reply.suggestionIds?.length) settle("suggesting", 4000);
       else setMarkState("idle");
     },
-    [settle],
+    [settle, dispatch],
   );
 
   const updatePlan = (messageId: string, status: "applied" | "dismissed") =>

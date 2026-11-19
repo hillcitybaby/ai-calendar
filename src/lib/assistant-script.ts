@@ -5,8 +5,10 @@
  */
 import { addDays, format, parseISO, set, startOfWeek } from "date-fns";
 
+import { parseTask } from "./parse-task";
 import { formatTimeRange } from "./schedule";
-import type { Action, State } from "./reducer";
+import { newId, type Action, type State } from "./reducer";
+import { bucketLabel, durationLabel } from "./task-options";
 import type { PlanStep } from "./types";
 
 export type ChatPlanStep = Omit<PlanStep, "status"> & { action: Action };
@@ -19,7 +21,33 @@ export type ScriptedReply = {
   text: string;
   plan?: ChatPlan;
   suggestionIds?: string[];
+  /** Applied as soon as the reply shows (adding a to-do you asked for doesn't need a plan). */
+  actions?: Action[];
+  /** To-dos to show in the reply, so they can be opened and edited. */
+  taskIds?: string[];
 };
+
+/** "add buy milk 15m #errands tomorrow", "remind me to call the plumber Friday", "todo: …". */
+const TODO_REQUEST =
+  /^(?:please\s+)?(?:add(?:\s+(?:a\s+)?(?:task|to-?do))?(?:\s*(?:to|on)\s+my\s+(?:list|to-?dos?))?:?|remind me to|new (?:task|to-?do):?|to-?do:?)\s+(.+)$/i;
+
+/** Turn a to-do request into a task, or null when the text isn't one. */
+export function todoFromRequest(input: string, state: State, today: Date) {
+  const m = input.trim().match(TODO_REQUEST);
+  if (!m) return null;
+  const rest = m[1].replace(/\s+(?:to|on)\s+my\s+(?:list|to-?dos?)\.?$/i, "").replace(/[.!]$/, "");
+  const p = parseTask(rest, today);
+  if (!p.title) return null;
+  return {
+    id: newId("task"),
+    title: p.title.charAt(0).toUpperCase() + p.title.slice(1),
+    durationMin: p.durationMin ?? state.settings.defaultTaskMin,
+    bucket: { kind: "day" as const, date: format(p.day ?? today, "yyyy-MM-dd") },
+    channel: p.channel,
+    subtasks: [],
+    done: false,
+  };
+}
 
 const iso = (d: Date) => format(d, "yyyy-MM-dd'T'HH:mm:ss");
 
@@ -53,6 +81,18 @@ function freeSlot(state: State, day: Date, minutes: number) {
 
 export function scriptedReply(input: string, state: State, today: Date): ScriptedReply {
   const text = input.toLowerCase();
+
+  const todo = todoFromRequest(input, state, today);
+  if (todo) {
+    const when = bucketLabel(todo.bucket, today, state.settings.weekStartsOn);
+    return {
+      working: "thinking",
+      workingLabel: "Adding it to your list…",
+      text: `Added "${todo.title}" to ${when === "Today" || when === "Tomorrow" ? when.toLowerCase() : when} · ${durationLabel(todo.durationMin)}${todo.channel ? ` · #${todo.channel}` : ""}. Click it to change anything.`,
+      actions: [{ type: "task/add", task: todo }],
+      taskIds: [todo.id],
+    };
+  }
 
   if (/free (evening|night)|evening free|night off/.test(text)) {
     const day = freeEvening(state, today);

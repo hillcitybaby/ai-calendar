@@ -4,6 +4,7 @@ import * as React from "react";
 import { X } from "lucide-react";
 
 import { SuggestionCardCompact } from "@/components/suggestions/suggestion-card";
+import { WorkTaskCard } from "@/components/tasks/work-task";
 import { Button } from "@/components/ui/button";
 import { greeting, PROMPT_SUGGESTIONS } from "@/lib/assistant-script";
 import { useStore } from "@/lib/store";
@@ -75,6 +76,16 @@ export function AssistantPanel() {
                       .filter((s) => s && s.status === "new")
                       .map((s) => (
                         <SuggestionCardCompact key={s!.id} s={s!} />
+                      ))}
+                  </div>
+                ) : null}
+                {m.taskIds?.length ? (
+                  <div className="flex flex-col gap-2">
+                    {m.taskIds
+                      .map((id) => state.tasks.find((t) => t.id === id))
+                      .filter((t) => !!t)
+                      .map((t) => (
+                        <WorkTaskCard key={t.id} task={t} />
                       ))}
                   </div>
                 ) : null}

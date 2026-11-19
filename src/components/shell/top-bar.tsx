@@ -4,6 +4,8 @@ import { AssistantMark } from "@/components/assistant/assistant-mark";
 import { useAssistant } from "@/components/assistant/assistant-provider";
 import { cn } from "@/lib/utils";
 
+import { AddTaskIconButton } from "@/components/tasks/task-editor";
+
 import { MobileHeader } from "./mobile-header";
 
 /**
@@ -28,7 +30,20 @@ export function TopBar({
 }) {
   return (
     <>
-    <MobileHeader title={mobile?.title ?? title} back={mobile?.back} trailing={mobile?.trailing} />
+    <MobileHeader
+      title={mobile?.title ?? title}
+      back={mobile?.back}
+      trailing={
+        mobile?.back ? (
+          mobile.trailing
+        ) : (
+          <>
+            <AddTaskIconButton className="size-8 rounded-[10px]" />
+            {mobile?.trailing}
+          </>
+        )
+      }
+    />
     <header
       className={cn(
         "hidden h-[60px] shrink-0 items-center gap-2 border-b border-border px-6 md:flex",
@@ -39,6 +54,7 @@ export function TopBar({
       {leading}
       <div className="min-w-0 flex-1" />
       {actions}
+      <AddTaskIconButton />
       <AssistantEntry />
     </header>
     </>

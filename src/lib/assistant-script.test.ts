@@ -43,3 +43,28 @@ describe("scriptedReply", () => {
     expect(r.text).toMatch(/Try one of the suggestions/);
   });
 });
+
+describe("to-do requests", () => {
+  it("adds a to-do with length, tag and day", () => {
+    const state = buildSeed(today);
+    const r = scriptedReply("add buy printer paper 15m #errands tomorrow", state, today);
+    expect(r.plan).toBeUndefined();
+    const next = r.actions!.reduce(reducer, state);
+    const t = next.tasks.find((x) => x.id === r.taskIds![0])!;
+    expect(t).toMatchObject({ title: "Buy printer paper", durationMin: 15, channel: "errands", bucket: { kind: "day", date: "2026-11-19" } });
+    expect(r.text).toContain("tomorrow");
+  });
+
+  it("understands 'remind me to' and defaults to today and the default length", () => {
+    const state = buildSeed(today);
+    const r = scriptedReply("Remind me to call the plumber", state, today);
+    const t = r.actions![0].type === "task/add" ? r.actions![0].task : null;
+    expect(t).toMatchObject({ title: "Call the plumber", durationMin: state.settings.defaultTaskMin, bucket: { kind: "day", date: "2026-11-18" } });
+  });
+
+  it("leaves other requests alone", () => {
+    const state = buildSeed(today);
+    expect(scriptedReply("Plan next week", state, today).actions).toBeUndefined();
+    expect(scriptedReply("Find a free evening", state, today).actions).toBeUndefined();
+  });
+});

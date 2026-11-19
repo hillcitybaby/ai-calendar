@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { AssistantPanel } from "@/components/assistant/assistant-panel";
 import { AssistantProvider } from "@/components/assistant/assistant-provider";
+import { TaskEditorProvider } from "@/components/tasks/task-editor";
 import { StoreProvider } from "@/lib/store";
 
 import { USER_INITIALS, WORKSPACE_NAME } from "./constants";
@@ -24,6 +25,7 @@ export function AppShell({
   return (
     <StoreProvider>
       <ShellProvider defaultCollapsed={defaultCollapsed}>
+        <TaskEditorProvider>
         <AssistantProvider>
           <div className="flex h-dvh overflow-hidden bg-background">
             <ShellSidebar />
@@ -34,6 +36,7 @@ export function AppShell({
           </div>
           <AssistantPanel />
         </AssistantProvider>
+        </TaskEditorProvider>
       </ShellProvider>
     </StoreProvider>
   );

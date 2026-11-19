@@ -11,6 +11,7 @@ import type { Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 import { CheckCircle } from "./check-circle";
+import { useTaskEditor } from "./task-editor";
 
 /** Pill used for duration and set time: same style for both. */
 function Pill({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -41,6 +42,7 @@ export function WorkTaskCard({
   ref?: React.Ref<HTMLDivElement>;
 } & React.HTMLAttributes<HTMLDivElement>) {
   const { dispatch } = useStore();
+  const { openEdit } = useTaskEditor();
   const color = task.channel ? (CHANNEL_COLORS[task.channel] ?? "slate") : "slate";
   return (
     <div
@@ -53,9 +55,19 @@ export function WorkTaskCard({
       )}
     >
       <div className="flex items-start gap-2">
-        <p className={cn("min-w-0 flex-1 text-sm font-medium", task.done ? "text-muted-foreground" : "text-foreground")}>
+        {/* The title opens the task form. Keys stay here so Enter/Space don't also start a keyboard drag. */}
+        <button
+          type="button"
+          onClick={() => openEdit(task.id)}
+          onKeyDown={(e) => e.stopPropagation()}
+          aria-label={`Edit "${task.title}"`}
+          className={cn(
+            "min-w-0 flex-1 cursor-pointer rounded-sm text-left text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+            task.done ? "text-muted-foreground" : "text-foreground",
+          )}
+        >
           {task.title}
-        </p>
+        </button>
         <Pill className="py-0.5">{formatDuration(task.durationMin)}</Pill>
       </div>
 

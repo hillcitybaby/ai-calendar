@@ -11,6 +11,8 @@ export type Action =
   | { type: "hydrate"; state: State }
   | { type: "reset" }
   | { type: "task/add"; task: Task }
+  | { type: "task/update"; id: string; patch: Partial<Omit<Task, "id">> }
+  | { type: "task/delete"; id: string }
   | { type: "task/toggle"; id: string }
   | { type: "task/toggleSubtask"; id: string; subtaskId: string }
   | { type: "task/schedule"; id: string; start: string }
@@ -117,6 +119,30 @@ export function reducer(state: State, action: Action): State {
       return buildSeed(new Date());
     case "task/add":
       return { ...state, tasks: [action.task, ...state.tasks] };
+    case "task/update": {
+      const task = state.tasks.find((t) => t.id === action.id);
+      if (!task) return state;
+      const next = { ...task, ...action.patch };
+      // Moving a time-boxed to-do to another day or list takes it off the calendar.
+      const moved = action.patch.bucket && JSON.stringify(action.patch.bucket) !== JSON.stringify(task.bucket);
+      if (moved && next.scheduledAt) next.scheduledAt = undefined;
+      return {
+        ...state,
+        tasks: state.tasks.map((t) => (t.id === task.id ? next : t)),
+        events: state.events.flatMap((e) => {
+          if (e.taskId !== task.id) return [e];
+          if (!next.scheduledAt) return [];
+          // Keep the time-boxed block in step with the to-do's title and length.
+          return [{ ...e, title: next.title, end: iso(addMinutes(parseISO(e.start), next.durationMin)) }];
+        }),
+      };
+    }
+    case "task/delete":
+      return {
+        ...state,
+        tasks: state.tasks.filter((t) => t.id !== action.id),
+        events: state.events.filter((e) => e.taskId !== action.id),
+      };
     case "task/toggle":
       return {
         ...state,
