@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import { useDraggable } from "@dnd-kit/core";
+import { Plus } from "lucide-react";
 
 import { CHANNEL_COLORS } from "@/lib/mock-data";
 import { calendarColorVars } from "@/lib/calendars";
 import { formatClock, formatDuration } from "@/lib/schedule";
-import { useStore } from "@/lib/store";
+import { newId, useStore } from "@/lib/store";
 import type { Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,19 @@ export function WorkTaskCard({
 } & React.HTMLAttributes<HTMLDivElement>) {
   const { dispatch } = useStore();
   const { openEdit } = useTaskEditor();
+  const [adding, setAdding] = React.useState(false);
+  const [newSub, setNewSub] = React.useState("");
+  const cancelled = React.useRef(false);
+  const addSub = () => {
+    const title = newSub.trim();
+    if (!title) return;
+    dispatch({
+      type: "task/update",
+      id: task.id,
+      patch: { subtasks: [...task.subtasks, { id: newId("sub"), title, done: false }], done: false },
+    });
+    setNewSub("");
+  };
   const color = task.channel ? (CHANNEL_COLORS[task.channel] ?? "slate") : "slate";
   return (
     <div
@@ -71,7 +85,7 @@ export function WorkTaskCard({
         <Pill className="py-0.5">{formatDuration(task.durationMin)}</Pill>
       </div>
 
-      {task.subtasks.length > 0 && (
+      {(task.subtasks.length > 0 || adding) && (
         <ul className="flex flex-col gap-1">
           {task.subtasks.map((s) => (
             <li key={s.id} className="flex items-center gap-2">
@@ -85,6 +99,38 @@ export function WorkTaskCard({
               </span>
             </li>
           ))}
+          {adding && (
+            <li className="flex items-center gap-2">
+              <CheckCircle checked={false} label="New subtask" />
+              {/* Keys and pointer stay here so typing never starts a drag. */}
+              <input
+                autoFocus
+                value={newSub}
+                onChange={(e) => setNewSub(e.target.value)}
+                onPointerDown={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addSub();
+                  } else if (e.key === "Escape") {
+                    cancelled.current = true;
+                    setNewSub("");
+                    setAdding(false);
+                  }
+                }}
+                onBlur={() => {
+                  // Clicking away keeps what was typed; Esc throws it away.
+                  if (!cancelled.current) addSub();
+                  cancelled.current = false;
+                  setAdding(false);
+                }}
+                placeholder="Subtask, then Enter"
+                aria-label={`New subtask for ${task.title}`}
+                className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              />
+            </li>
+          )}
         </ul>
       )}
 
@@ -100,6 +146,20 @@ export function WorkTaskCard({
             )}
           />
           {task.scheduledAt && <Pill className="py-px">{formatClock(task.scheduledAt)}</Pill>}
+          {!task.done && !adding && state !== "dragging" && (
+            // Shows on hover or keyboard focus; on touch, tap the title and add subtasks in the form.
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              onPointerDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              aria-label={`Add subtask to ${task.title}`}
+              className="flex h-[18px] items-center gap-1 rounded-sm px-1 text-xs text-muted-foreground opacity-0 outline-none transition-opacity hover:text-foreground focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-hover/task:opacity-100 pointer-coarse:hidden"
+            >
+              <Plus className="size-3" aria-hidden />
+              Subtask
+            </button>
+          )}
         </div>
         {task.channel && (
           <span className="flex items-center gap-0.5 text-xs" style={calendarColorVars(color)}>

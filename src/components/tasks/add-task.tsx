@@ -5,20 +5,20 @@ import { format } from "date-fns";
 import { Plus } from "lucide-react";
 
 import { parseTask } from "@/lib/parse-task";
-import { formatPlanned } from "@/lib/schedule";
+import { formatDuration } from "@/lib/schedule";
 import { newId, useStore } from "@/lib/store";
 import type { TaskBucket } from "@/lib/types";
 import { useToday } from "@/lib/use-today";
 import { cn } from "@/lib/utils";
 
 import { CheckCircle } from "./check-circle";
-import { useTaskEditor } from "./task-editor";
-import { LengthMenu, TagMenu, WhenMenu } from "./task-fields";
+import { LengthMenu, TagMenu } from "./task-fields";
 
 /**
  * Add Task (AC): quick add at the top of every to-do list. Default / Hover / Typing.
- * Typing parses length, #tag and day into chips; each chip is also a dropdown, and
- * "More options" opens the full task form. The badge shows the list's planned time.
+ * Typing: the length chip sits at the end of the text and the #tag chip below, right-aligned;
+ * both are dropdowns. A day in the text ("tomorrow") files it there. Shift+Enter adds a subtask
+ * line; Enter adds the task. The badge shows the list's planned time (h:mm).
  */
 export function AddTask({
   bucket,
@@ -31,35 +31,50 @@ export function AddTask({
   className?: string;
 }) {
   const { state, dispatch } = useStore();
-  const { openNew } = useTaskEditor();
   const today = useToday();
   const [typing, setTyping] = React.useState(false);
   const [draft, setDraft] = React.useState("");
   // Picks from the chip dropdowns win over what the text says.
-  const [picked, setPicked] = React.useState<{ durationMin?: number; channel?: string | null; bucket?: TaskBucket }>({});
+  const [picked, setPicked] = React.useState<{ durationMin?: number; channel?: string | null }>({});
   const menuOpen = React.useRef(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = React.useRef<HTMLTextAreaElement>(null);
+  // Subtask lines added with Shift+Enter.
+  const [subs, setSubs] = React.useState<string[]>([]);
+  const subRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+  const [focusSub, setFocusSub] = React.useState<number | null>(null);
+  React.useEffect(() => {
+    if (focusSub === null) return;
+    subRefs.current[focusSub]?.focus();
+    setFocusSub(null);
+  }, [focusSub, subs]);
   const parsed = parseTask(draft, today);
 
   const durationMin = picked.durationMin ?? parsed.durationMin ?? state.settings.defaultTaskMin;
   const channel = picked.channel === null ? undefined : (picked.channel ?? parsed.channel);
-  const target: TaskBucket =
-    picked.bucket ?? (parsed.day ? { kind: "day", date: format(parsed.day, "yyyy-MM-dd") } : bucket);
+  // A day named in the text ("tomorrow", "friday") files it there; otherwise this list.
+  const target: TaskBucket = parsed.day ? { kind: "day", date: format(parsed.day, "yyyy-MM-dd") } : bucket;
 
   const close = () => {
     setTyping(false);
     setDraft("");
     setPicked({});
+    setSubs([]);
   };
 
   const submit = () => {
     if (!parsed.title) return;
+    const subtasks = subs
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .map((title) => ({ id: newId("sub"), title, done: false }));
     dispatch({
       type: "task/add",
-      task: { id: newId("task"), title: parsed.title, durationMin, bucket: target, channel, subtasks: [], done: false },
+      task: { id: newId("task"), title: parsed.title, durationMin, bucket: target, channel, subtasks, done: false },
     });
     setDraft("");
     setPicked({});
+    setSubs([]);
+    inputRef.current?.focus();
   };
 
   const menuProps = {
@@ -84,12 +99,33 @@ export function AddTask({
         <Plus className="size-4 text-muted-foreground group-hover/add:text-foreground" aria-hidden />
         <span className="min-w-0 flex-1 text-sm text-muted-foreground group-hover/add:text-foreground">Add task</span>
         <span className="rounded-sm bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-          {formatPlanned(plannedMin)}
+          {formatDuration(plannedMin)}
           <span className="sr-only"> planned</span>
         </span>
       </button>
     );
   }
+
+  /** Keys shared by the title and subtask fields. Shift+Enter starts a subtask line below `at`. */
+  const onFieldKey = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>, at: number) => {
+    if (e.key === "Enter" && e.shiftKey) {
+      e.preventDefault();
+      setSubs((all) => [...all.slice(0, at + 1), "", ...all.slice(at + 1)]);
+      setFocusSub(at + 1);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      submit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    } else if (e.key === "Backspace" && at >= 0 && !subs[at]) {
+      // Backspace on an empty subtask removes it and goes back up.
+      e.preventDefault();
+      setSubs((all) => all.filter((_, i) => i !== at));
+      if (at === 0) inputRef.current?.focus();
+      else setFocusSub(at - 1);
+    }
+  };
 
   return (
     <div
@@ -97,47 +133,46 @@ export function AddTask({
       onBlur={(e) => {
         // Close when focus leaves the whole control with nothing typed (not while a chip menu is open).
         if (menuOpen.current || e.currentTarget.contains(e.relatedTarget as Node | null)) return;
-        if (!draft.trim()) close();
+        if (!draft.trim() && !subs.some((x) => x.trim())) close();
       }}
     >
       <div className="flex items-start gap-2">
         <CheckCircle checked={false} label="New task" className="mt-px" />
-        <input
+        <textarea
           ref={inputRef}
           autoFocus
+          rows={1}
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              submit();
-            } else if (e.key === "Escape") {
-              e.preventDefault();
-              close();
-            }
-          }}
-          aria-label="New task. Add a length like 45m, a #channel or a day."
-          placeholder="Task name, 45m, #channel, tomorrow"
-          className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          onChange={(e) => setDraft(e.target.value.replace(/\n/g, " "))}
+          onKeyDown={(e) => onFieldKey(e, -1)}
+          aria-label="New task. Add a length like 45m, a #tag or a day. Shift+Enter adds a subtask."
+          placeholder="Task name, 45m, #tag, tomorrow"
+          className="field-sizing-content min-w-0 flex-1 resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
-      </div>
-      <div className="flex flex-wrap gap-1 pl-[26px]" aria-live="polite">
         <LengthMenu {...menuProps} value={durationMin} onChange={(m) => setPicked((p) => ({ ...p, durationMin: m }))} />
-        <TagMenu {...menuProps} value={channel} onChange={(t) => setPicked((p) => ({ ...p, channel: t ?? null }))} />
-        <WhenMenu {...menuProps} value={target} onChange={(b) => setPicked((p) => ({ ...p, bucket: b }))} />
       </div>
-      <div className="flex items-center gap-2 pl-[26px]">
-        <p className="min-w-0 flex-1 text-xs text-muted-foreground">Enter to add · Esc to cancel</p>
-        <button
-          type="button"
-          onClick={() => {
-            openNew({ title: parsed.title, durationMin, channel, bucket: target });
-            close();
-          }}
-          className="shrink-0 rounded-sm text-xs font-medium text-foreground underline-offset-2 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        >
-          More options
-        </button>
+      {subs.length > 0 && (
+        <ul className="flex flex-col gap-1 pl-[26px]" aria-label="Subtasks">
+          {subs.map((sub, i) => (
+            <li key={i} className="flex items-center gap-2">
+              <CheckCircle checked={false} label={`Subtask ${i + 1}`} />
+              <input
+                ref={(el) => {
+                  subRefs.current[i] = el;
+                }}
+                value={sub}
+                onChange={(e) => setSubs((all) => all.map((x, j) => (j === i ? e.target.value : x)))}
+                onKeyDown={(e) => onFieldKey(e, i)}
+                aria-label={`Subtask ${i + 1}`}
+                placeholder="Subtask"
+                className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex flex-wrap justify-end gap-1 pl-[26px]" aria-live="polite">
+        <TagMenu {...menuProps} value={channel} onChange={(t) => setPicked((p) => ({ ...p, channel: t ?? null }))} />
       </div>
     </div>
   );
