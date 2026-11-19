@@ -19,7 +19,7 @@ There are two Figma files. The owner will share the links; they're kept out of t
 | File | What's in it |
 |---|---|
 | **Design system kit** (the owner's shadcn/ui kit) | Source of truth for tokens and components. The app's own components end in **"(AC)"**. |
-| **AI-Calendar** | Screens and iteration history on the page *Exploration and iteration*. Frames Pass 1 → Pass 5. **Pass 5 is the latest and approved.** |
+| **AI-Calendar** | Screens and iteration history on the page *Exploration and iteration*. Frames Pass 1 → Pass 6. **Pass 5 is the approved desktop design. Pass 6 adds tablet and mobile.** |
 
 ### Pass 5 screens (AI-Calendar file, node IDs)
 
@@ -34,13 +34,30 @@ There are two Figma files. The owner will share the links; they're kept out of t
 | Settings | `86:8056` |
 | Week, sidebar collapsed | `90:8000` |
 
-All screens are 1440 wide, desktop only for now.
+These are desktop screens, 1440 wide.
+
+### Pass 6 screens: tablet and mobile (AI-Calendar file, node IDs)
+
+Tablet is iPad portrait, 834×1194. Mobile is iPhone, 390×844. Pages that scroll are drawn taller than the device so the whole page shows.
+
+| Screen | Tablet | Mobile |
+|---|---|---|
+| Today | `93:8423` | `112:10547` |
+| Week | `95:8695` | `113:10631` |
+| Month | `95:9237` | `114:10773` |
+| Suggestions | `98:9315` | `115:10818` |
+| Assistant | `100:9822` | `115:11043` |
+| Connectors & interests | `98:9649` | `117:11087` |
+| Settings | `98:9943` | `117:11350` (list); `117:11447` (Settings › Suggestions, example detail screen) |
+
+See [section 4](#4-tablet-and-mobile) for the layout rules.
 
 ### Kit components to build (node IDs in the kit file)
 
 | Kit page | Components |
 |---|---|
-| Navigation (AC) | `Sidebar (AC)` 4016:45 (expanded); `Sidebar Collapsed (AC)` 4107:62 (icon rail); `Sidebar Item (AC)` 4016:39; `Sidebar Calendar (AC)` 4050:84; `Toggle Group (AC)` 4016:126 (Day / Week / Month) |
+| Navigation (AC) | `Sidebar (AC)` 4016:45 (expanded); `Sidebar Collapsed (AC)` 4107:62 (icon rail, also the tablet sidebar); `Sidebar Item (AC)` 4016:39; `Sidebar Calendar (AC)` 4050:84; `Toggle Group (AC)` 4016:126 (Day / Week / Month) |
+| Navigation (AC), Mobile section | `Status Bar (AC)` 4124:176 (design placeholder; the OS draws the real one); `Mobile Header (AC)` 4124:204 (`Type` = Title \| Back, props Title, Show trailing); `Tab Bar (AC)` 4124:306 (`Active` = Today \| Calendar \| Suggestions \| Settings) |
 | Tasks (AC) | `Work Task (AC)` 4047:190; `Add Task (AC)` 4047:230; `Subtask (AC)` 4047:51; `Check Circle (AC)` 4047:34; `Task Column Header (AC)` 4047:236 |
 | Scheduler (AC) | `Time Grid (AC)` 4021:277; `Event Block (AC)` 4020:96; `Event Chip (AC)` 4020:127; `Now Line (AC)` 4020:218; `Day Header (AC)` 4020:212; `Task Card (AC)` 4020:189 (drag preview only; lists use Work Task) |
 | AI Elements (AC) | `Suggestion Card (AC)` 4074:481; `Cost Tier (AC)` 4074:453; `Plan (AC)` 4018:219 + `Plan Step (AC)` 4018:218; `Message (AC)`; `Prompt Input (AC)`; `Thinking (AC)`; `Confirmation (AC)` (Assistant chat only) |
@@ -103,7 +120,45 @@ Everything else is stock shadcn/ui: Button, Icon Button, Badge, Input, Switch, A
   - Suggestions: how many, budget, kid-friendly first, weather, home area, interests
   - Notifications
 
-## 4. Tokens
+## 4. Tablet and mobile
+
+Proposed breakpoints:
+
+| Layout | Width | Design |
+|---|---|---|
+| Mobile | under 768 | 390-wide (Pass 6) |
+| Tablet | 768 to 1279 | 834-wide portrait (Pass 6) |
+| Desktop | 1280 and up | 1440-wide (Pass 5) |
+
+An iPad in landscape (1194 wide) gets the tablet layout.
+
+### Tablet (834 portrait)
+
+| Area | Layout |
+|---|---|
+| Shell | The sidebar is always the icon rail, `Sidebar Collapsed (AC)`. The top bar is the same as desktop: date, prev/next, Today, Day/Week/Month, search, and the resting Assistant Mark. |
+| Today | Two columns. The to-do column (~400) holds the AI plan card, Add Task and the work tasks. The day calendar fills the rest and uses the full height: hour rows grow, they don't stay fixed at 50px. |
+| Week and Month | The calendar runs full width on top. The to-do list sits below in **two columns**, with Add Task spanning both. On Week, the compact Suggestion Cards sit side by side. The calendar takes whatever height the list leaves. |
+| Suggestions | Two full-size cards per row. The page scrolls. |
+| Assistant | The same 440-wide side sheet as desktop, full height, over the current view. |
+| Connectors & interests | The two panels stack. |
+| Settings | Same sub-nav, slimmer (~176). The sections fill the rest. |
+
+### Mobile (390)
+
+| Area | Layout |
+|---|---|
+| Shell | `Mobile Header (AC)` (Title on tab roots, Back on detail screens) and `Tab Bar (AC)` at the bottom: Today, Calendar, the Assistant Mark (center, opens the Assistant), Suggestions, Settings. There's no sidebar. |
+| Today | A single column: the date and planned-hours bar, the AI plan card, Add Task, then the work tasks. |
+| Calendar tab | A Day/Week/Month segmented control at the top. |
+| Week | A 7-day strip with up to 3 colored event dots per day (today is a filled circle). Below it is the selected day's timeline, with suggested events still dashed. A **"To schedule" bottom sheet** peeks above the tab bar (count, planned time, suggestion count) and drags up to show the to-do list and the compact Suggestion Cards. |
+| Month | A compact grid (date + dots, today filled, next-month days muted). The selected day's agenda is below as rows: time, a colored bar (dashed for suggested), and title + time range. |
+| Suggestions | Filter, then one full-size card per row. There's no hover on touch: **tapping a card shows the same photo overlay** (add at the suggested time) and the X. The header's trailing icon opens Settings › Suggestions. |
+| Assistant | Full screen and modal (no tab bar): conversation, plan card, prompt chips and input. Close with the X. |
+| Connectors & interests | The Connectors list (with Add connector) stacked above Your interests, behind a Back header. |
+| Settings | A profile card and a list of sections (General, Planning, Suggestions, Notifications, Connectors & interests, Account), each opening a detail screen. On detail screens, **segmented controls sit below their label**, not beside it. |
+
+## 5. Tokens
 
 The kit is shadcn/ui ("New York"-style neutral) with **Geist** / **Geist Mono**. Only a light theme is defined so far; dark mode isn't designed yet.
 
@@ -183,7 +238,7 @@ Default calendar mapping in the designs:
 | paragraph mini | Regular / Medium / SemiBold | 12/16 | — |
 | mono | Geist Mono | 16/24, 14/20, 12/16 | — |
 
-## 5. Suggested stack and first milestones
+## 6. Suggested stack and first milestones
 
 These are proposals; confirm with the owner.
 
@@ -206,7 +261,14 @@ These are proposals; confirm with the owner.
      - full-size Suggestion Cards with the hover overlay and dismiss
   5. **Connectors & interests** and **Settings**.
   6. **Assistant Mark** component, ported from the prototype (states, sizes, reduced motion).
-  7. Then real data: Google Calendar, Google Tasks, ClickUp, weather, and event discovery.
+  7. **Tablet and mobile** ([section 4](#4-tablet-and-mobile)):
+     - the icon-rail shell at tablet widths
+     - the tab-bar shell, Calendar tab and To schedule bottom sheet on mobile
+     - tap-to-reveal on Suggestion Cards
+     - Settings list → detail screens
+
+     It's cheaper to build each screen responsive from the start; this milestone is the check that every screen matches Pass 6.
+  8. Then real data: Google Calendar, Google Tasks, ClickUp, weather, and event discovery.
 
    Note that **Google Keep's official API is limited to Google Workspace enterprise accounts.** Verify how to read Keep before relying on it.
 
