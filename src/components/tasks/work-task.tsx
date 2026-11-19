@@ -26,8 +26,9 @@ function Pill({ children, className }: { children: React.ReactNode; className?: 
 export type WorkTaskState = "default" | "dragging";
 
 /**
- * Work Task (AC): the one to-do card used everywhere. Title + duration, optional subtasks,
- * and a footer with the check, an optional set time and #channel. No source label.
+ * Work Task (AC): the one to-do card used everywhere. The check sits left of the title, with the
+ * duration on the right; subtasks and the footer (optional set time, "+ Subtask" on hover,
+ * #channel) indent to line up with the title. No source label.
  * States: Default / Hover (CSS) / Dragging / Done.
  */
 export function WorkTaskCard({
@@ -69,6 +70,16 @@ export function WorkTaskCard({
       )}
     >
       <div className="flex items-start gap-2">
+        <CheckCircle
+          checked={task.done}
+          label={`Mark "${task.title}" ${task.done ? "not done" : "done"}`}
+          onToggle={() => dispatch({ type: "task/toggle", id: task.id })}
+          className={cn(
+            "mt-px",
+            !task.done && "group-hover/task:border-calendar-emerald-accent group-hover/task:text-calendar-emerald-accent",
+            !task.done && state === "dragging" && "border-border text-border",
+          )}
+        />
         {/* The title opens the task form. Keys stay here so Enter/Space don't also start a keyboard drag. */}
         <button
           type="button"
@@ -86,7 +97,7 @@ export function WorkTaskCard({
       </div>
 
       {(task.subtasks.length > 0 || adding) && (
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-1 pl-[26px]">
           {task.subtasks.map((s) => (
             <li key={s.id} className="flex items-center gap-2">
               <CheckCircle
@@ -134,17 +145,14 @@ export function WorkTaskCard({
         </ul>
       )}
 
-      <div className="flex items-center justify-between gap-2">
+      <div
+        className={cn(
+          "flex items-center justify-between gap-2 pl-[26px]",
+          // With no time or tag the footer only holds "+ Subtask": hide it when that can't show.
+          !task.scheduledAt && !task.channel && (task.done || adding || state === "dragging" ? "hidden" : "pointer-coarse:hidden"),
+        )}
+      >
         <div className="flex items-center gap-2">
-          <CheckCircle
-            checked={task.done}
-            label={`Mark "${task.title}" ${task.done ? "not done" : "done"}`}
-            onToggle={() => dispatch({ type: "task/toggle", id: task.id })}
-            className={cn(
-              !task.done && "group-hover/task:border-calendar-emerald-accent group-hover/task:text-calendar-emerald-accent",
-              !task.done && state === "dragging" && "border-border text-border",
-            )}
-          />
           {task.scheduledAt && <Pill className="py-px">{formatClock(task.scheduledAt)}</Pill>}
           {!task.done && !adding && state !== "dragging" && (
             // Shows on hover or keyboard focus; on touch, tap the title and add subtasks in the form.
@@ -188,6 +196,9 @@ export function DraggableWorkTask({ task }: { task: Task }) {
       {...listeners}
       // The card holds checkboxes, so it's a group rather than a button; it stays focusable for keyboard dragging.
       role="group"
+      // dnd-kit marks a done (undraggable) card aria-disabled, which would also disable its checks for
+      // assistive tech. Only dragging is off, so drop it.
+      aria-disabled={undefined}
       aria-roledescription="Draggable task"
       aria-label={`${task.title}, ${formatDuration(task.durationMin)}. Drag onto the calendar to schedule.`}
     />
