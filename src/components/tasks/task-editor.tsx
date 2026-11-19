@@ -1,15 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { format, parseISO, startOfWeek } from "date-fns";
-import { Plus, Trash2, X } from "lucide-react";
+import { format, startOfWeek } from "date-fns";
+import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { parseDateParam } from "@/lib/calendar-view";
-import { formatClock } from "@/lib/schedule";
 import { newId, useStore } from "@/lib/store";
 import type { Subtask, Task, TaskBucket } from "@/lib/types";
 import { useToday } from "@/lib/use-today";
@@ -23,7 +22,6 @@ export type TaskDraft = Partial<Pick<Task, "title" | "durationMin" | "channel" |
 type Ctx = {
   /** Open the form for a new to-do. Without a bucket, it lands in the list the page is showing. */
   openNew: (draft?: TaskDraft) => void;
-  openEdit: (id: string) => void;
 };
 
 const TaskEditorContext = React.createContext<Ctx | null>(null);
@@ -48,20 +46,19 @@ const isTypingTarget = (el: EventTarget | null) =>
   el instanceof HTMLElement && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
 
 /**
- * Add or edit a to-do from anywhere: the + in the top bar and mobile header, N on the keyboard,
- * "More options" in Add Task, or a click on a Work Task's title.
+ * Add a to-do from anywhere: the + in the top bar and mobile header, or N on the keyboard.
+ * Existing to-dos are edited in place on their Work Task card.
  */
 export function TaskEditorProvider({ children }: { children: React.ReactNode }) {
   const { state } = useStore();
   const today = useToday();
-  const [session, setSession] = React.useState<{ key: number; editId?: string; draft: TaskDraft } | null>(null);
+  const [session, setSession] = React.useState<{ key: number; draft: TaskDraft } | null>(null);
 
   const openNew = React.useCallback(
     (draft: TaskDraft = {}) =>
       setSession((s) => ({ key: (s?.key ?? 0) + 1, draft: { bucket: pageBucket(today, state.settings.weekStartsOn), ...draft } })),
     [today, state.settings.weekStartsOn],
   );
-  const openEdit = React.useCallback((id: string) => setSession((s) => ({ key: (s?.key ?? 0) + 1, editId: id, draft: {} })), []);
 
   // N adds a to-do, unless you're typing or a dialog is already open.
   React.useEffect(() => {
@@ -75,32 +72,30 @@ export function TaskEditorProvider({ children }: { children: React.ReactNode }) 
     return () => window.removeEventListener("keydown", onKey);
   }, [openNew]);
 
-  const ctx = React.useMemo(() => ({ openNew, openEdit }), [openNew, openEdit]);
-  const editing = session?.editId ? state.tasks.find((t) => t.id === session.editId) : undefined;
+  const ctx = React.useMemo(() => ({ openNew }), [openNew]);
 
   return (
     <TaskEditorContext.Provider value={ctx}>
       {children}
-      <Dialog open={!!session && (!session.editId || !!editing)} onOpenChange={(o) => !o && setSession(null)}>
-        {session && (
-          <TaskForm key={session.key} task={editing} draft={session.draft} onDone={() => setSession(null)} />
-        )}
+      <Dialog open={!!session} onOpenChange={(o) => !o && setSession(null)}>
+        {session && <TaskForm key={session.key} draft={session.draft} onDone={() => setSession(null)} />}
       </Dialog>
     </TaskEditorContext.Provider>
   );
 }
 
-/** The task form: title, length, tag, when, subtasks. Centered on desktop, a bottom sheet on mobile. */
-function TaskForm({ task, draft, onDone }: { task?: Task; draft: TaskDraft; onDone: () => void }) {
+/**
+ * The new-task form: title, length, tag, when, subtasks. Centered on desktop, a bottom sheet on
+ * mobile. Existing to-dos are edited in place on their Work Task card, not here.
+ */
+function TaskForm({ draft, onDone }: { draft: TaskDraft; onDone: () => void }) {
   const { state, dispatch } = useStore();
   const today = useToday();
-  const [title, setTitle] = React.useState(task?.title ?? draft.title ?? "");
-  const [durationMin, setDurationMin] = React.useState(task?.durationMin ?? draft.durationMin ?? state.settings.defaultTaskMin);
-  const [channel, setChannel] = React.useState(task?.channel ?? draft.channel);
-  const [bucket, setBucket] = React.useState<TaskBucket>(
-    task?.bucket ?? draft.bucket ?? { kind: "day", date: format(today, "yyyy-MM-dd") },
-  );
-  const [subtasks, setSubtasks] = React.useState<Subtask[]>(task?.subtasks ?? draft.subtasks ?? []);
+  const [title, setTitle] = React.useState(draft.title ?? "");
+  const [durationMin, setDurationMin] = React.useState(draft.durationMin ?? state.settings.defaultTaskMin);
+  const [channel, setChannel] = React.useState(draft.channel);
+  const [bucket, setBucket] = React.useState<TaskBucket>(draft.bucket ?? { kind: "day", date: format(today, "yyyy-MM-dd") });
+  const [subtasks, setSubtasks] = React.useState<Subtask[]>(draft.subtasks ?? []);
   const [newSub, setNewSub] = React.useState("");
 
   const addSub = () => {
@@ -114,21 +109,8 @@ function TaskForm({ task, draft, onDone }: { task?: Task; draft: TaskDraft; onDo
     // A subtask typed but not yet added still counts.
     const subs = newSub.trim() ? [...subtasks, { id: newId("sub"), title: newSub.trim(), done: false }] : subtasks;
     const fields = { title: title.trim(), durationMin, channel, bucket, subtasks: subs.filter((s) => s.title.trim()) };
-    if (task) {
-      dispatch({ type: "task/update", id: task.id, patch: fields });
-    } else {
-      dispatch({ type: "task/add", task: { id: newId("task"), done: false, ...fields } });
-      toast(`Added "${fields.title}"`);
-    }
-    onDone();
-  };
-
-  const remove = () => {
-    if (!task) return;
-    dispatch({ type: "task/delete", id: task.id });
-    toast(`Deleted "${task.title}"`, {
-      action: { label: "Undo", onClick: () => dispatch({ type: "task/add", task: { ...task, scheduledAt: undefined } }) },
-    });
+    dispatch({ type: "task/add", task: { id: newId("task"), done: false, ...fields } });
+    toast(`Added "${fields.title}"`);
     onDone();
   };
 
@@ -145,7 +127,7 @@ function TaskForm({ task, draft, onDone }: { task?: Task; draft: TaskDraft; onDo
         className="flex max-h-[85dvh] flex-col"
       >
         <header className="flex items-center gap-2 px-4 pt-4 pb-2">
-          <DialogTitle className="flex-1 text-base font-semibold">{task ? "Edit task" : "New task"}</DialogTitle>
+          <DialogTitle className="flex-1 text-base font-semibold">New task</DialogTitle>
           <Button type="button" variant="ghost" size="icon" className="size-7 rounded-md" aria-label="Close" onClick={onDone}>
             <X />
           </Button>
@@ -167,22 +149,6 @@ function TaskForm({ task, draft, onDone }: { task?: Task; draft: TaskDraft; onDo
             <WhenMenu variant="field" value={bucket} onChange={setBucket} />
           </div>
 
-          {task?.scheduledAt && (
-            <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
-              <span className="flex-1 text-muted-foreground">
-                On your calendar {format(parseISO(task.scheduledAt), "EEE")} at {formatClock(task.scheduledAt)}
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 px-2.5 shadow-none"
-                onClick={() => dispatch({ type: "task/unschedule", id: task.id })}
-              >
-                Unschedule
-              </Button>
-            </div>
-          )}
 
           <section aria-label="Subtasks" className="flex flex-col gap-2">
             <h3 className="text-sm font-medium text-foreground">Subtasks</h3>
@@ -231,18 +197,12 @@ function TaskForm({ task, draft, onDone }: { task?: Task; draft: TaskDraft; onDo
         </div>
 
         <footer className="flex items-center gap-2 px-4 pt-3 pb-4">
-          {task && (
-            <Button type="button" variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-destructive hover:text-destructive" onClick={remove}>
-              <Trash2 />
-              Delete
-            </Button>
-          )}
           <span className="flex-1" />
           <Button type="button" variant="outline" size="sm" className="h-8 shadow-none" onClick={onDone}>
             Cancel
           </Button>
           <Button type="submit" size="sm" className="h-8" disabled={!title.trim()}>
-            {task ? "Save" : "Add task"}
+            Add task
           </Button>
         </footer>
       </form>

@@ -79,12 +79,15 @@ export function LengthMenu({
   value,
   onChange,
   variant,
+  trigger,
   onOpenChange,
   returnFocus,
 }: {
   value?: number;
   onChange: (min: number) => void;
   variant: Variant;
+  /** Use the card's own element (Work Task's duration pill) as the trigger. */
+  trigger?: React.ReactElement;
   onOpenChange?: (open: boolean) => void;
   /** Where focus goes when the menu closes (Add Task sends it back to the text field). */
   returnFocus?: () => void;
@@ -93,7 +96,9 @@ export function LengthMenu({
   return (
     <DropdownMenu onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Trigger variant={variant} icon={Clock} label={value ? durationLabel(value) : undefined} placeholder="Length" aria-label={`Length${value ? `: ${durationLabel(value)}` : ""}`} />
+        {trigger ?? (
+          <Trigger variant={variant} icon={Clock} label={value ? durationLabel(value) : undefined} placeholder="Length" aria-label={`Length${value ? `: ${durationLabel(value)}` : ""}`} />
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" onCloseAutoFocus={closeFocus(returnFocus)} className="w-36">
         <DropdownMenuRadioGroup value={value ? String(value) : ""} onValueChange={(v) => onChange(Number(v))}>
@@ -112,12 +117,15 @@ export function TagMenu({
   value,
   onChange,
   variant,
+  trigger,
   onOpenChange,
   returnFocus,
 }: {
   value?: string;
   onChange: (tag: string | undefined) => void;
   variant: Variant;
+  /** Use the card's own element (Work Task's #channel) as the trigger. */
+  trigger?: React.ReactElement;
   onOpenChange?: (open: boolean) => void;
   /** Where focus goes when the menu closes (Add Task sends it back to the text field). */
   returnFocus?: () => void;
@@ -143,7 +151,7 @@ export function TagMenu({
       }}
     >
       <DropdownMenuTrigger asChild>
-        <Trigger variant={variant} icon={Hash} label={value} placeholder="Tag" aria-label={`Tag${value ? `: ${value}` : ""}`} />
+        {trigger ?? <Trigger variant={variant} icon={Hash} label={value} placeholder="Tag" aria-label={`Tag${value ? `: ${value}` : ""}`} />}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" onCloseAutoFocus={closeFocus(returnFocus)} className="max-h-72 w-52">
         <div className="p-1">
