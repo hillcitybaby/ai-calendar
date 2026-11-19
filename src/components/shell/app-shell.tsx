@@ -7,14 +7,12 @@ import { AssistantPanel } from "@/components/assistant/assistant-panel";
 import { AssistantProvider } from "@/components/assistant/assistant-provider";
 import { StoreProvider } from "@/lib/store";
 
+import { USER_INITIALS, WORKSPACE_NAME } from "./constants";
 import { Sidebar } from "./sidebar";
 import { SidebarRail } from "./sidebar-rail";
 import { TabBar } from "./tab-bar";
 import { ShellProvider, useShell } from "./shell-provider";
 
-/** Example identity until accounts exist. Keep generic: this repo is public. */
-const WORKSPACE_NAME = "My Calendar";
-const USER_INITIALS = "ME";
 
 export function AppShell({
   defaultCollapsed,

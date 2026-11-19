@@ -7,6 +7,7 @@ import { SuggestionCardCompact } from "@/components/suggestions/suggestion-card"
 import { Button } from "@/components/ui/button";
 import { greeting, PROMPT_SUGGESTIONS } from "@/lib/assistant-script";
 import { useStore } from "@/lib/store";
+import { useIsMobile } from "@/lib/use-media";
 import { cn } from "@/lib/utils";
 
 import { useAssistant } from "./assistant-provider";
@@ -19,6 +20,8 @@ import { AssistantMessage, ChatPlanCard, PromptInput, SuggestionChip, Thinking, 
 export function AssistantPanel() {
   const { open, setOpen, messages, working, send, applyPlan, markState } = useAssistant();
   const { state } = useStore();
+  // Full-screen and modal on mobile; a docked, non-modal panel from 768px up.
+  const mobile = useIsMobile();
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
   const endRef = React.useRef<HTMLDivElement>(null);
   const [greet] = React.useState(() => greeting(state, new Date()));
@@ -35,6 +38,8 @@ export function AssistantPanel() {
   return (
     <aside
       aria-label="Assistant"
+      role={mobile ? "dialog" : undefined}
+      aria-modal={mobile && open ? true : undefined}
       aria-hidden={!open}
       inert={!open}
       onKeyDown={(e) => {
@@ -82,7 +87,7 @@ export function AssistantPanel() {
         <div ref={endRef} />
       </div>
 
-      <div className="flex shrink-0 flex-col gap-4 px-4 pt-2 pb-3">
+      <div className="flex shrink-0 flex-col gap-4 px-4 pt-2 pb-[max(env(safe-area-inset-bottom),12px)]">
         <div className="flex flex-wrap gap-2">
           {PROMPT_SUGGESTIONS.map((p) => (
             <SuggestionChip key={p} label={p} onClick={() => send(p)} />

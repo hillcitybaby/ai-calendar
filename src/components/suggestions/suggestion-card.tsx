@@ -115,9 +115,12 @@ export function SuggestionCard({
 }) {
   const { accept, dismiss } = useActions(s);
   const d = parseISO(s.start);
+  // Touch has no hover: tapping the photo reveals the overlay, its action and the X.
+  const [revealed, setRevealed] = React.useState(false);
   return (
     <article
       aria-label={s.title}
+      data-revealed={revealed}
       className={cn(
         "group/sug flex flex-col gap-4 rounded-xl border border-border bg-card px-3 pt-3 pb-4 shadow-sm transition-[border-color,box-shadow]",
         "hover:border-ring hover:shadow-md focus-within:border-ring focus-within:shadow-md",
@@ -127,7 +130,8 @@ export function SuggestionCard({
       <Photo s={s} className="h-[158px] rounded-lg">
         <div
           aria-hidden
-          className="absolute inset-0 bg-black/50 opacity-0 transition-opacity group-hover/sug:opacity-100 group-focus-within/sug:opacity-100"
+          onClick={() => setRevealed((r) => !r)}
+          className="absolute inset-0 bg-black/50 opacity-0 transition-opacity group-hover/sug:opacity-100 group-focus-within/sug:opacity-100 group-data-[revealed=true]/sug:opacity-100"
         />
         <IconTab>
           <IconRow s={s} className="gap-2.5" />
@@ -138,7 +142,7 @@ export function SuggestionCard({
             accept();
             onAdd?.();
           }}
-          className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-sm font-medium whitespace-nowrap text-secondary-foreground opacity-0 outline-none transition-opacity group-hover/sug:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-focus-within/sug:opacity-100"
+          className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-sm font-medium whitespace-nowrap text-secondary-foreground opacity-0 outline-none transition-opacity pointer-coarse:pointer-events-none group-hover/sug:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-focus-within/sug:opacity-100 group-data-[revealed=true]/sug:pointer-events-auto group-data-[revealed=true]/sug:opacity-100"
         >
           <Plus className="size-4" aria-hidden />
           {addLabel(s)}
@@ -150,7 +154,7 @@ export function SuggestionCard({
             onDismiss?.();
           }}
           aria-label={`Not interested in ${s.title}`}
-          className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-md border border-border bg-background opacity-0 outline-none transition-opacity group-hover/sug:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-focus-within/sug:opacity-100"
+          className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-md border border-border bg-background opacity-0 outline-none transition-opacity pointer-coarse:pointer-events-none group-hover/sug:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-focus-within/sug:opacity-100 group-data-[revealed=true]/sug:pointer-events-auto group-data-[revealed=true]/sug:opacity-100"
         >
           <X className="size-4" aria-hidden />
         </button>
@@ -206,9 +210,11 @@ function IconTab({ children }: { children: React.ReactNode }) {
 export function SuggestionCardCompact({ s, className }: { s: Suggestion; className?: string }) {
   const { accept, dismiss } = useActions(s);
   const d = parseISO(s.start);
+  const [revealed, setRevealed] = React.useState(false);
   return (
     <article
       aria-label={s.title}
+      data-revealed={revealed}
       className={cn(
         "group/sug relative flex h-[84px] items-center gap-3 rounded-lg border border-border bg-card py-2.5 pr-3 pl-2.5 transition-[border-color,box-shadow]",
         "hover:border-ring hover:shadow-md focus-within:border-ring focus-within:shadow-md",
@@ -218,13 +224,14 @@ export function SuggestionCardCompact({ s, className }: { s: Suggestion; classNa
       <Photo s={s} className="size-16 shrink-0 rounded-md">
         <div
           aria-hidden
-          className="absolute inset-0 bg-black/50 opacity-0 transition-opacity group-hover/sug:opacity-100 group-focus-within/sug:opacity-100"
+          onClick={() => setRevealed((r) => !r)}
+          className="absolute inset-0 bg-black/50 opacity-0 transition-opacity group-hover/sug:opacity-100 group-focus-within/sug:opacity-100 group-data-[revealed=true]/sug:opacity-100"
         />
         <button
           type="button"
           onClick={accept}
           aria-label={addLabel(s, true)}
-          className="absolute top-1/2 left-1/2 flex size-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-md bg-secondary text-secondary-foreground opacity-0 outline-none transition-opacity group-hover/sug:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-focus-within/sug:opacity-100"
+          className="absolute top-1/2 left-1/2 flex size-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-md bg-secondary text-secondary-foreground opacity-0 outline-none transition-opacity pointer-coarse:pointer-events-none group-hover/sug:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-focus-within/sug:opacity-100 group-data-[revealed=true]/sug:pointer-events-auto group-data-[revealed=true]/sug:opacity-100"
         >
           <Plus className="size-4" aria-hidden />
         </button>
@@ -243,7 +250,7 @@ export function SuggestionCardCompact({ s, className }: { s: Suggestion; classNa
         type="button"
         onClick={dismiss}
         aria-label={`Not interested in ${s.title}`}
-        className="absolute top-[5px] right-[5px] flex size-[22px] items-center justify-center rounded-md text-foreground opacity-0 outline-none transition-opacity group-hover/sug:opacity-100 hover:bg-accent focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-focus-within/sug:opacity-100"
+        className="absolute top-[5px] right-[5px] flex size-[22px] items-center justify-center rounded-md text-foreground opacity-0 outline-none transition-opacity pointer-coarse:pointer-events-none group-hover/sug:opacity-100 hover:bg-accent focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 group-focus-within/sug:opacity-100 group-data-[revealed=true]/sug:pointer-events-auto group-data-[revealed=true]/sug:opacity-100"
       >
         <X className="size-3" aria-hidden />
       </button>

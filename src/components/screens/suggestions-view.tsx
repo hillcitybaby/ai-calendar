@@ -3,10 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { isAfter, parseISO } from "date-fns";
-import { Lightbulb, MapPin, Settings } from "lucide-react";
+import { Lightbulb, MapPin, Settings, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import { Segmented } from "@/components/common/segmented";
+import { MobileHeaderButton } from "@/components/shell/mobile-header";
 import { TopBar } from "@/components/shell/top-bar";
 import { SuggestionCard } from "@/components/suggestions/suggestion-card";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,15 @@ export function SuggestionsView() {
     <>
       <TopBar
         title="Suggestions"
+        mobile={{
+          trailing: (
+            <MobileHeaderButton asChild>
+              <Link href="/settings/suggestions" aria-label="Suggestion preferences">
+                <SlidersHorizontal />
+              </Link>
+            </MobileHeaderButton>
+          ),
+        }}
         actions={
           <Button asChild variant="outline" size="sm" className="h-7 gap-1.5 px-2.5 shadow-none">
             <Link href="/settings#suggestions">
@@ -54,12 +64,13 @@ export function SuggestionsView() {
         }
       />
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-8 p-6">
+        <div className="flex flex-col gap-6 p-4 pt-2 md:gap-8 md:p-6">
           <Segmented
             value={filter}
             onChange={setFilter}
             label="Show"
-            className="self-start"
+            stretch="mobile"
+            className="md:self-start"
             options={[
               { value: "all", label: "All" },
               { value: "activity", label: "Activities" },
@@ -110,7 +121,7 @@ function Section({
         <MapPin className="size-4" aria-hidden />
         {title}
       </h2>
-      <div className="grid grid-cols-2 gap-6 xl:grid-cols-[repeat(auto-fill,minmax(320px,362px))]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-[repeat(auto-fill,minmax(320px,362px))]">
         {items.map((s) => (
           <SuggestionCard key={s.id} s={s} onDismiss={() => onDismiss(s)} onAdd={() => onAdd(s)} />
         ))}

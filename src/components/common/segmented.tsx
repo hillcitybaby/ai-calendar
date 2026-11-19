@@ -19,8 +19,8 @@ export function Segmented<T extends string>({
   onChange: (value: T) => void;
   options: { value: T; label: string }[];
   label: string;
-  /** Fill the width, items sharing it equally (mobile Calendar tab). */
-  stretch?: boolean;
+  /** Fill the width, items sharing it equally. "mobile" only does so below 768px. */
+  stretch?: boolean | "mobile";
   className?: string;
 }) {
   return (
@@ -32,7 +32,7 @@ export function Segmented<T extends string>({
       }}
       aria-label={label}
       spacing={1}
-      className={cn("rounded-lg border border-border p-1", stretch && "w-full", className)}
+      className={cn("rounded-lg border border-border p-1", stretch === true && "w-full", stretch === "mobile" && "w-full md:w-fit", className)}
     >
       {options.map((o) => (
         <ToggleGroupItem
@@ -40,7 +40,8 @@ export function Segmented<T extends string>({
           value={o.value}
           className={cn(
             "h-8 rounded-md px-3 text-foreground",
-            stretch && "flex-1",
+            stretch === true && "flex-1",
+            stretch === "mobile" && "flex-1 md:flex-none",
             "hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
           )}
         >

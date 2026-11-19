@@ -50,12 +50,17 @@ Source of truth: the design system kit (see `CLAUDE.md`). Approved screens: Pass
 - Assistant Mark (AC) finished: all 12 states wired to what the assistant is doing (summoned on open, thinking, responding, waiting on you, scheduling on apply, done), sizes L/M/S, reduced motion.
 - Replies are scripted mock responses (no AI model yet); applying a plan really changes the calendar.
 
-### 7. Real data (not started without you)
+### 7. Tablet and mobile (Pass 6)
+- **7a, tablet (768–1279):** always the icon rail; its toggle opens the full sidebar as an overlay drawer (Esc, scrim or navigating closes it). Today at 400px; Week and Month put the calendar on top and the list below in two columns; Suggestions two per row; Connectors stacked; Settings sub-nav 176px.
+- **7b, mobile (under 768):** Mobile Header (AC) and Tab Bar (AC) replace the sidebar and top bar. Today shows the plan. The Calendar tab has Day (`/day`), Week (7-day strip with dots, the day's timeline, a "To schedule" bottom sheet) and Month (dot grid plus the selected day's agenda). Swipe to change week, month or day.
+- **7c, mobile:** Suggestions one per row with tap-to-reveal, a sliders icon to Settings › Suggestions; the Assistant full screen and modal; Connectors behind a Back header; Settings as a profile card and section list, with each section at `/settings/<section>` (segmented controls below their labels). From 768px up those routes show the full Settings page scrolled to the section.
+
+### 8. Real data (not started without you)
 Google Calendar, Google Tasks, ClickUp, weather, event discovery, a real model for the Assistant. Needs accounts, API keys and an auth decision, so I stop before this and write up options. Google Keep's API is Workspace-only; I'll research alternatives.
 
 ## Defaults I'll follow without asking
 
-- Desktop only (≥1280 wide), as designed. Light theme only until dark is designed.
+- Desktop (1280+), tablet (768–1279) and mobile (under 768), per Pass 5 and Pass 6. Light theme only until dark is designed.
 - Weeks start Sunday; the Settings value overrides it.
 - The sidebar keeps its Calendars group on every page (the kit's Sidebar has it; Settings and Connectors frames omit it).
 - Example data stays generic: no names or places from the Figma frames.

@@ -14,11 +14,14 @@ export function SettingsCard({
   title,
   description,
   action,
+  hideHeader,
   children,
   className,
 }: {
   id?: string;
   title: string;
+  /** Mobile detail screens: the Back header already names the section. */
+  hideHeader?: boolean;
   description?: string;
   action?: React.ReactNode;
   children: React.ReactNode;
@@ -31,7 +34,7 @@ export function SettingsCard({
       aria-labelledby={headingId}
       className={cn("scroll-mt-6 overflow-hidden rounded-lg border border-border bg-card", className)}
     >
-      <header className="flex items-center gap-3 border-b border-border p-4">
+      <header className={cn("flex items-center gap-3 border-b border-border p-4", hideHeader && "sr-only")}>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <h2 id={headingId} className="text-sm font-semibold text-foreground">
             {title}
@@ -92,9 +95,10 @@ export function ChoiceRow<T extends string>({
   options: { value: T; label: string }[];
 }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
+    // Mobile detail screens put the segmented control below its label.
+    <div className="flex flex-col items-stretch gap-3 px-4 py-3 md:flex-row md:items-center">
       <RowText label={label} description={description} />
-      <Segmented value={value} onChange={onChange} options={options} label={label} />
+      <Segmented value={value} onChange={onChange} options={options} label={label} stretch="mobile" />
     </div>
   );
 }
